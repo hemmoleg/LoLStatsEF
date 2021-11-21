@@ -1,6 +1,5 @@
 import { app, BrowserWindow } from "electron";
 import { enableLiveReload } from "electron-compile";
-import { DBReader } from "./dbReader";
 
 import { WindowStateKeeper } from "./windowStateKeeper";
 import { ipcMain } from "electron-better-ipc";
@@ -60,12 +59,9 @@ const createWindow = async () =>
    
     mainWindow = new BrowserWindow(windowOptionsMain);
 
-    
-
     //track window state
     windowStateKeeperMain.track(mainWindow);
     
-
     // and load the index.html of the app.
     mainWindow.loadURL(`file://${__dirname}/index.html`);
 
@@ -98,20 +94,6 @@ const createWindow = async () =>
 const init = async () =>
 {
     createWindow();
-
-    let dbReaderMyGamesNew = new DBReader();
-    // let dbReaderGamesNew = new DBReader();
-    ipcMain.answerRenderer("establishDBConnection", async (filePath:string) => dbReaderMyGamesNew.establishDBConnection(filePath))
-    ipcMain.answerRenderer("getNumMatches", async () => await dbReaderMyGamesNew.getNumMatches());
-    ipcMain.answerRenderer("getNumWins", async () => await dbReaderMyGamesNew.getNumWins());
-    ipcMain.answerRenderer("getNumLoses", async () => await dbReaderMyGamesNew.getNumLoses());
-    ipcMain.answerRenderer("getMostRecentGameTimestamp", async () => await dbReaderMyGamesNew.getMostRecentGameTimestamp());
-    ipcMain.answerRenderer("getMatchById", async (matchId: number) => await dbReaderMyGamesNew.getMatchById(matchId))
-
-    // ipcMain.answerRenderer("establishDBConnection2", async (filePath:string) => dbReaderGamesNew.establishDBConnection(filePath))
-    // ipcMain.answerRenderer("getAllMatchIds", async () => dbReaderGamesNew.getAllMatchIds())
-
-    //const galeforce = new GaleforceModule(/* config */);//({riotApi:{key: "RGAPI-12036474-5e6d-4a0f-a266-7c6f71c7bda5"}});
     
     const galeforce = new GaleforceModule({
       'riot-api': {
@@ -120,8 +102,6 @@ const init = async () =>
     });
     
     console.log(galeforce);
-
-    
 
     let test = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).name("hemmoleg").exec();
     console.log(test);

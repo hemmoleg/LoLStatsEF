@@ -1,7 +1,7 @@
 {
-  "name": "SkypeTimelineAnalyzer",
-  "productName": "SkypeTimelineAnalyzer",
-  "version": "1.2.200415-master",
+  "name": "LoLStatsEF",
+  "productName": "LoLStatsEF",
+  "version": "0.0.1",
   "description": "My Electron application description",
   "main": "src/index.ts",
   "scripts": {
@@ -46,7 +46,7 @@
         ]
       },
       "electronWinstallerConfig": {
-        "name": "SkypeTimelineAnalyzer"
+        "name": "LolStatsEF"
       },
       "electronInstallerDebian": {},
       "electronInstallerRedhat": {},
@@ -56,7 +56,7 @@
       },
       "windowsStoreConfig": {
         "packageName": "",
-        "name": "SkypeTimelineAnalyzer"
+        "name": "LoLStatsEF"
       }
     }
   },
