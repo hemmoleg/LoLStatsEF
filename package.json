@@ -1,0 +1,93 @@
+{
+  "name": "SkypeTimelineAnalyzer",
+  "productName": "SkypeTimelineAnalyzer",
+  "version": "1.2.200415-master",
+  "description": "My Electron application description",
+  "main": "src/index.ts",
+  "scripts": {
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "tslint src",
+    "watchless": "less-watch-compiler src dist",
+    "start": "electron-forge start",
+    "uglify": "node uglify.js",
+    "packageUgly": "node uglify.js && cd ugly && electron-forge make",
+    "license": "node generateLicenseFile.js"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Robert Pluntke",
+    "email": "robert.pluntke@digifors.de"
+  },
+  "license": "MIT",
+  "config": {
+    "forge": {
+      "make_targets": {
+        "win32": [
+          "squirrel"
+        ],
+        "darwin": [
+          "zip"
+        ],
+        "linux": [
+          "deb",
+          "rpm"
+        ]
+      },
+      "electronPackagerConfig": {
+        "packageManager": "npm",
+        "asar": true,
+        "ignore": [
+          "([a-z\\-])*\\.db+",
+          "([a-z\\-])*\\.xlsx+",
+          "([a-z\\-])*\\.txt+",
+          "([a-z\\-])*\\.dll+"
+        ]
+      },
+      "electronWinstallerConfig": {
+        "name": "SkypeTimelineAnalyzer"
+      },
+      "electronInstallerDebian": {},
+      "electronInstallerRedhat": {},
+      "github_repository": {
+        "owner": "",
+        "name": ""
+      },
+      "windowsStoreConfig": {
+        "packageName": "",
+        "name": "SkypeTimelineAnalyzer"
+      }
+    }
+  },
+  "dependencies": {
+    "@angular/cdk": "^7.3.7",
+    "@angular/cli": "^12.2.13",
+    "@angular/common": "^12.2.13",
+    "@angular/compiler": "^12.2.13",
+    "@angular/compiler-cli": "^12.2.13",
+    "@angular/core": "^12.2.13",
+    "@angular/platform-browser": "^12.2.13",
+    "@angular/platform-browser-dynamic": "^12.2.13",
+    "electron": "^11.4.10",
+    "electron-better-ipc": "^2.0.1",
+    "electron-compile": "^6.4.4",
+    "electron-json-storage": "^4.1.8",
+    "electron-settings": "^3.2.0",
+    "electron-squirrel-startup": "^1.0.0",
+    "galeforce": "^0.5.1",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^6.6.7",
+    "sql.js": "^1.6.2",
+    "tslib": "^1.11.1",
+    "typeorm": "^0.2.41",
+    "zone.js": "^0.11.4"
+  },
+  "devDependencies": {
+    "electron-forge": "^5.2.4",
+    "electron-packager": "^13.1.1",
+    "electron-prebuilt-compile": "3.0.13",
+    "tslint": "~6.1.0",
+    "typescript": "^4.1.6"
+  }
+}
