@@ -5,7 +5,7 @@ import { DBReader } from "./dbReader";
 import { WindowStateKeeper } from "./windowStateKeeper";
 import { ipcMain } from "electron-better-ipc";
 
-import GaleforceModule from "galeforce";
+import GaleforceModule = require("galeforce");
 
 const ipc = require("electron-better-ipc");
 
@@ -110,18 +110,12 @@ const init = async () =>
 
     // ipcMain.answerRenderer("establishDBConnection2", async (filePath:string) => dbReaderGamesNew.establishDBConnection(filePath))
     // ipcMain.answerRenderer("getAllMatchIds", async () => dbReaderGamesNew.getAllMatchIds())
-
-    //const galeforce = new GaleforceModule(/* config */);//({riotApi:{key: "RGAPI-12036474-5e6d-4a0f-a266-7c6f71c7bda5"}});
     
     const galeforce = new GaleforceModule({
       'riot-api': {
-        key: 'RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+        key: 'RGAPI-cc4802a5-ecb7-477f-a0da-4af5364de12c',
       },
     });
-    
-    console.log(galeforce);
-
-    
 
     let test = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).name("hemmoleg").exec();
     console.log(test);
