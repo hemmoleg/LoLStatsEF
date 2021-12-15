@@ -1,6 +1,8 @@
 import { webContents } from "electron";
 import { Connection, createConnection, Repository, Brackets } from 'typeorm';
-import { Match } from './entities/Match';
+import { Match } from './entitiesV4/Match';
+
+import { DBBan, DBInfo, DBMatch, DBMetadata, DBParticipant, DBPerks, DBSelection, DBStatPerks, DBStyle, DBTeam } from "./entitiesV5/DBMatch";
 
 // const ipc = require("electron-better-ipc");
 
@@ -10,6 +12,8 @@ export class DBReader
     mainWebContents: webContents;
 
     private connection: Connection;
+
+    MatchRepositoryV5: Repository<DBMatch>;
 
     MatchRepository: Repository<Match>;
 
@@ -37,11 +41,91 @@ export class DBReader
 
     // public set CacheDBreader(reader: CacheDBReader)
     // { this.cacheDBReader = reader; }
-    
 
+    async establishDBConnectionV5(filePath: string){
+      this.connection = await this.openConnectionV5(filePath);
+    }
+
+    async createTablesV5(){
+      try{ await this.connection.synchronize(true); }
+      catch(e){
+        console.log("ERRORRROOROR", e);
+      }
+      console.log("DBReader DB synchronized");
+    }
+
+    async testDB(){
+      this.MatchRepositoryV5 = this.connection.getRepository(
+        DBMatch
+      );
+
+      let numMatches = await this.MatchRepositoryV5.createQueryBuilder().getCount();
+      console.log("just testing the connection: numMatches", numMatches);
+    }
+
+    async writeMatch(dbMatch: DBMatch){
+      let savedMatch = await this.MatchRepositoryV5.save(dbMatch);
+      console.log("saved match");
+      // console.log("saved match", savedMatch);
+
+      let numMatches = await this.MatchRepositoryV5.createQueryBuilder().getCount();
+      console.log("numMatches", numMatches);
+
+      let matches = await this.MatchRepositoryV5.find({ relations: ["info", "metadata"] });
+      console.log("match", matches[0]);
+
+      let infoRepository = this.connection.getRepository(DBInfo);
+      let numInfos = await infoRepository.createQueryBuilder().getCount();
+      console.log("numInfos", numInfos);
+
+      //let info = await infoRepository.find({ relations: ["participants"] });
+      let info = await infoRepository.findOne();
+      console.log("info", info);
+
+
+      await this.connection.close();
+      // this.connection.manager.save
+    }
+
+    async openConnectionV5(filePath: string)
+    {
+        if (this.connection && this.connection.isConnected) {
+            console.log("DBReader", "Closing old connection...");
+            try {
+                await this.connection.close();
+            } catch (e) {
+                console.log("DBReader", e);
+            }
+            console.log("DBReader", "Old connection closed");
+        }
+        else { console.log("DBReader", "No old connection"); }
+
+        console.log("DBReader", "Opening new connection to:", filePath);
+        
+        let connectionTemp: Connection;
+        try{
+          connectionTemp = await createConnection({
+              type: "sqljs",
+              location: filePath,
+              entities: [DBMatch, DBInfo, DBTeam, DBBan, DBParticipant, DBPerks, 
+                DBStyle, DBSelection, DBStatPerks, DBMetadata],
+              name: "MyConnection1",
+              //logging: true,
+              autoSave: true
+          });
+          console.log("DBReader", "connection open");
+        } catch (e){
+          console.log("DBReader", "could not open connection", e);
+        }
+
+        return connectionTemp;
+    }
+
+
+    //<----------------------V4---------------------------------->
     async establishDBConnection(filePath: string)
     {        
-        this.connection = await this.openConnection(filePath);
+        this.connection = await this.openConnectionV4(filePath);
         
         this.MatchRepository = this.connection.getRepository(
             Match
@@ -77,7 +161,7 @@ export class DBReader
         // }
         return 0;
     }
-
+    
     async getNumMatches(){
       return await this.MatchRepository.createQueryBuilder().getCount();
     }
@@ -90,7 +174,7 @@ export class DBReader
       return await this.MatchRepository.createQueryBuilder().where("outcome = 2").getCount();
     }
 
-    async getMostRecentGameTimestamp(){
+    async getMostRecentGameTimestamp(): Promise<number>{
       let res = await this.MatchRepository.createQueryBuilder().select("MAX(creation)", "max").getRawOne();
       return res.max;
     }
@@ -103,7 +187,7 @@ export class DBReader
       return await this.MatchRepository.find({ where: { gameId: matchId} });
     }
 
-    async openConnection(filePath: string)
+    async openConnectionV4(filePath: string)
     {
         if (this.connection && this.connection.isConnected) {
             console.log("DBReader", "Closing old connection...");

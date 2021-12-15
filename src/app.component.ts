@@ -35,11 +35,11 @@ export class AppComponent implements OnInit
     
         registerLocaleData(localeDe, 'de-DE');
 
-        await ipcRenderer.callMain("establishDBConnection", "C:\\My Projects\\LoLStats\\my_games_new.db");
-        this.numMatches = await ipcRenderer.callMain("getNumMatches");
-        this.numWins = await ipcRenderer.callMain("getNumWins");
-        this.numLoses = await ipcRenderer.callMain("getNumLoses");
-        this.mostRecentMatchTimestamp = await ipcRenderer.callMain("getMostRecentGameTimestamp");
+        // await ipcRenderer.callMain("establishDBConnection", "C:\\My Projects\\LoLStatsEF\\my_games_match_v4.db");
+        // this.numMatches = await ipcRenderer.callMain("getNumMatches");
+        // this.numWins = await ipcRenderer.callMain("getNumWins");
+        // this.numLoses = await ipcRenderer.callMain("getNumLoses");
+        // this.mostRecentMatchTimestamp = await ipcRenderer.callMain("getMostRecentGameTimestamp");
     }
 
   async compareDBs(){
