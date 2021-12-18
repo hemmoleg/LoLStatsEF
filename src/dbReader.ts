@@ -2,7 +2,7 @@ import { webContents } from "electron";
 import { Connection, createConnection, Repository, Brackets } from 'typeorm';
 import { Match } from './entitiesV4/Match';
 
-import { DBBan, DBInfo, DBMatch, DBMetadata, DBParticipant, DBPerks, DBSelection, DBStatPerks, DBStyle, DBTeam } from "./entitiesV5/DBMatch";
+import { DBBan, DBChampionKills, DBDragon, DBInfo, DBInhibitor, DBMatch, DBMetadata, DBObjectives, DBParticipant, DBPerks, DBRiftHerald, DBSelection, DBStatPerks, DBStyle, DBTeam, DBTower, DBBaron, DBFoo } from "./entitiesV5/DBMatch";
 
 // const ipc = require("electron-better-ipc");
 
@@ -54,7 +54,7 @@ export class DBReader
       console.log("DBReader DB synchronized");
     }
 
-    async testDB(){
+    async createRepositories(){
       this.MatchRepositoryV5 = this.connection.getRepository(
         DBMatch
       );
@@ -63,28 +63,75 @@ export class DBReader
       console.log("just testing the connection: numMatches", numMatches);
     }
 
-    async writeMatch(dbMatch: DBMatch){
+    async writeMatch(dbMatch: DBMatch): Promise<DBMatch>{
       let savedMatch = await this.MatchRepositoryV5.save(dbMatch);
       console.log("saved match");
+      return savedMatch;
       // console.log("saved match", savedMatch);
 
-      let numMatches = await this.MatchRepositoryV5.createQueryBuilder().getCount();
-      console.log("numMatches", numMatches);
+      // let numMatches = await this.MatchRepositoryV5.createQueryBuilder().getCount();
+      // console.log("numMatches", numMatches);
 
       let matches = await this.MatchRepositoryV5.find({ relations: ["info", "metadata"] });
-      console.log("match", matches[0]);
+      console.log("dbReader.writeMatch returning first match from matchRepository");
+      return matches[0];
 
-      let infoRepository = this.connection.getRepository(DBInfo);
-      let numInfos = await infoRepository.createQueryBuilder().getCount();
-      console.log("numInfos", numInfos);
+      // let infoRepository = this.connection.getRepository(DBInfo);
+      // let numInfos = await infoRepository.createQueryBuilder().getCount();
+      // console.log("numInfos", numInfos);
 
       //let info = await infoRepository.find({ relations: ["participants"] });
-      let info = await infoRepository.findOne();
-      console.log("info", info);
+      // let info = await infoRepository.findOne();
+      // console.log("info", info);
+
+      // console.log("style from db via match", matches[0].info.participants[0].perks.styles);
+      // console.log("selections from db via match", matches[0].info.participants[0].perks.styles[0].selections);
+
+      // let perksRepository = await this.connection.getRepository(DBPerks);
+      // let perks = await perksRepository.findOne();
+      // console.log("perks from db via perks", perks);
 
 
-      await this.connection.close();
+      // let participantRepository = await this.connection.getRepository(DBParticipant);
+      // let participant = await participantRepository.findOne();
+      // console.log("participant from db via participant", participant.perks);
+
+      // works
+      // console.log("team 1 bans", matches[0].info.teams[0].bans);
+      // console.log("team 2 bans", matches[0].info.teams[1].bans);
+
+      // await this.connection.close();
       // this.connection.manager.save
+    }
+
+    async getMatchByGameId(matchId: number): Promise<DBMatch> {
+      let match = await this.MatchRepositoryV5.findOne({
+        where: {
+          info:{gameId: matchId}
+        },
+        relations:['info']
+      })
+
+      //fix random sorting of participants
+      match.info.participants = match.info.participants.sort(function(a, b) {
+        return a.participantId - b.participantId;
+      });
+
+      //fix random sorting of selections
+      match.info.participants.forEach(p => p.perks.styles.forEach(s => {
+        s.selections = s.selections.sort(function(a, b) {
+          return a.id - b.id;
+        });
+      }));
+
+      //fix random sorting of bans
+      match.info.teams.forEach(t => 
+        t.bans = t.bans.sort(function(a, b){
+          return a.id - b.id;
+        })
+      );
+
+      return match;
     }
 
     async openConnectionV5(filePath: string)
@@ -108,7 +155,8 @@ export class DBReader
               type: "sqljs",
               location: filePath,
               entities: [DBMatch, DBInfo, DBTeam, DBBan, DBParticipant, DBPerks, 
-                DBStyle, DBSelection, DBStatPerks, DBMetadata],
+                DBStyle, DBSelection, DBStatPerks, DBMetadata, DBObjectives, DBTower,
+                DBRiftHerald, DBInhibitor, DBDragon, DBChampionKills, DBBaron, DBFoo],
               name: "MyConnection1",
               //logging: true,
               autoSave: true
@@ -162,67 +210,67 @@ export class DBReader
         return 0;
     }
     
-    async getNumMatches(){
-      return await this.MatchRepository.createQueryBuilder().getCount();
-    }
+    // async getNumMatches(){
+    //   return await this.MatchRepository.createQueryBuilder().getCount();
+    // }
 
-    async getNumWins(){
-      return await this.MatchRepository.createQueryBuilder().where("outcome = 1").getCount();
-    }
+    // async getNumWins(){
+    //   return await this.MatchRepository.createQueryBuilder().where("outcome = 1").getCount();
+    // }
 
-    async getNumLoses(){
-      return await this.MatchRepository.createQueryBuilder().where("outcome = 2").getCount();
-    }
+    // async getNumLoses(){
+    //   return await this.MatchRepository.createQueryBuilder().where("outcome = 2").getCount();
+    // }
 
-    async getMostRecentGameTimestamp(): Promise<number>{
-      let res = await this.MatchRepository.createQueryBuilder().select("MAX(creation)", "max").getRawOne();
-      return res.max;
-    }
+    // async getMostRecentGameTimestamp(): Promise<number>{
+    //   let res = await this.MatchRepository.createQueryBuilder().select("MAX(creation)", "max").getRawOne();
+    //   return res.max;
+    // }
 
-    async getAllMatchIds(){
-      return await this.MatchRepository.createQueryBuilder().select("gameId").getRawMany();
-    }
+    // async getAllMatchIds(){
+    //   return await this.MatchRepository.createQueryBuilder().select("gameId").getRawMany();
+    // }
 
-    async getMatchById(matchId: number){
-      return await this.MatchRepository.find({ where: { gameId: matchId} });
-    }
+    // async getMatchById(matchId: number){
+    //   return await this.MatchRepository.find({ where: { gameId: matchId} });
+    // }
 
-    async openConnectionV4(filePath: string)
-    {
-        if (this.connection && this.connection.isConnected) {
-            console.log("DBReader", "Closing old connection...");
-            try {
-                await this.connection.close();
-            } catch (e) {
-                console.log("DBReader", e);
-            }
-            console.log("DBReader", "Old connection closed");
-        }
-        else { console.log("DBReader", "No old connection"); }
+    // async openConnectionV4(filePath: string)
+    // {
+    //     if (this.connection && this.connection.isConnected) {
+    //         console.log("DBReader", "Closing old connection...");
+    //         try {
+    //             await this.connection.close();
+    //         } catch (e) {
+    //             console.log("DBReader", e);
+    //         }
+    //         console.log("DBReader", "Old connection closed");
+    //     }
+    //     else { console.log("DBReader", "No old connection"); }
 
-        console.log("DBReader", "Opening new connection...");
+    //     console.log("DBReader", "Opening new connection...");
         
-        let connectionTemp: Connection;
-        try{
-          connectionTemp = await createConnection({
-              type: "sqljs",
-              location: filePath,
-              entities: [Match],
-              name: "MyConnection1"
-          });
-          console.log("DBReader", "OPEN_1");
-        } catch (e){
-          connectionTemp = await createConnection({
-            type: "sqljs",
-            location: filePath,
-            entities: [Match],
-            name: "MyConnection2"
-          });
-          console.log("DBReader", "OPEN_2");
-        }
+    //     let connectionTemp: Connection;
+    //     try{
+    //       connectionTemp = await createConnection({
+    //           type: "sqljs",
+    //           location: filePath,
+    //           entities: [Match],
+    //           name: "MyConnection1"
+    //       });
+    //       console.log("DBReader", "OPEN_1");
+    //     } catch (e){
+    //       connectionTemp = await createConnection({
+    //         type: "sqljs",
+    //         location: filePath,
+    //         entities: [Match],
+    //         name: "MyConnection2"
+    //       });
+    //       console.log("DBReader", "OPEN_2");
+    //     }
 
-        return connectionTemp;
-    }
+    //     return connectionTemp;
+    // }
 
     async getDBInfo()
     {

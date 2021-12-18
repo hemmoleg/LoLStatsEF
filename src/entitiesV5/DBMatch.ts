@@ -15,7 +15,7 @@ export class DBMetadata {
   @Column("simple-array", { name: "participants"})
   participants: string[];
 
-  public static createFromApi(matchDTO: MatchDTO): DBMetadata {
+  public static CreateFromApi(matchDTO: MatchDTO): DBMetadata {
     let dbMetadata = new DBMetadata();
     dbMetadata.dataVersion = matchDTO.metadata.dataVersion;
     dbMetadata.matchId = matchDTO.metadata.matchId;
@@ -23,36 +23,26 @@ export class DBMetadata {
     return dbMetadata;
   }
 
-}
 
-@Entity({name: "statperks"})
-export class DBStatPerks {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column("integer", { name: "defense"})
-  defense: number;
-
-  @Column("integer", { name: "flex"})
-  flex: number;
-
-  @Column("integer", { name: "offense"})
-  offense: number;
-
-  public static CreateFromApi(statperks: any): DBStatPerks {
-    let dbStatperks = new DBStatPerks();
-    dbStatperks.defense = statperks.defense;
-    dbStatperks.flex = statperks.flex;
-    dbStatperks.offense = statperks.offense;
-    return dbStatperks;
+  compareAgainstApi(apiMetadata: any): boolean{
+    console.log("comparing Metadata...");
+    return (this.dataVersion == apiMetadata.dataVersion &&
+        this.matchId == apiMetadata.matchId &&
+        this.participants.every((p, i) => p == apiMetadata.participants[i])
+    );
   }
 
 }
+
 
 @Entity({name: "selection"})
 export class DBSelection {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @ManyToOne(() => DBSelection)
+  @JoinColumn({ name: 'dbStyle_id' })
+  dummyFieldForManyToOne: unknown;
 
   @Column("integer", { name: "perk"})
   perk: number;
@@ -80,6 +70,47 @@ export class DBSelection {
     
     return dbSelections;
   }
+
+  compareAgainstApi(apiSelection: any): boolean{
+    let res = (this.perk == apiSelection.perk &&
+      this.var1 == apiSelection.var1 &&
+      this.var2 == apiSelection.var2 &&
+      this.var3 == apiSelection.var3);
+
+    console.log("comparing Selection...", res);
+    return res;
+  }
+}
+
+@Entity({name: "statperks"})
+export class DBStatPerks {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column("integer", { name: "defense"})
+  defense: number;
+
+  @Column("integer", { name: "flex"})
+  flex: number;
+
+  @Column("integer", { name: "offense"})
+  offense: number;
+
+  public static CreateFromApi(statperks: any): DBStatPerks {
+    let dbStatperks = new DBStatPerks();
+    dbStatperks.defense = statperks.defense;
+    dbStatperks.flex = statperks.flex;
+    dbStatperks.offense = statperks.offense;
+    return dbStatperks;
+  }
+
+  compareAgainstApi(apiStatPerks: any): boolean{
+    let res = (this.defense == apiStatPerks.defense &&
+      this.flex == apiStatPerks.flex &&
+      this.offense == apiStatPerks.offense);
+    console.log("comparing StatPerks...", res);
+    return res;
+  }
 }
 
 @Entity({name: "style"})
@@ -87,10 +118,14 @@ export class DBStyle {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ManyToOne(() => DBStyle)
+  @JoinColumn({ name: 'dbPerks_id' })
+  dummyFieldForManyToOne: unknown;
+
   @Column("varchar", { name: "description"})
   description: string;
 
-  @OneToMany(() => DBSelection, "", {cascade: true})
+  @OneToMany(() => DBSelection, (selection) => selection.dummyFieldForManyToOne, {cascade: true, eager: true})
   selections: DBSelection[];
 
   @Column("integer", { name: "style"})
@@ -106,10 +141,19 @@ export class DBStyle {
       dbStyle.selections = DBSelection.CreateFromApi(style.selections);
       dbStyle.style = style.style;
 
-      dbStyles.push(style);
+      dbStyles.push(dbStyle);
     }
     
     return dbStyles;
+  }
+
+  compareAgainstApi(apiStyle: any): boolean{
+    let res =  (this.description == apiStyle.description &&
+      this.selections.every((s, i) => s.compareAgainstApi(apiStyle.selections[i])) &&
+      this.style == apiStyle.style
+    );
+    console.log("comparing style...", res);
+    return res;
   }
 }
 
@@ -118,11 +162,11 @@ export class DBPerks {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => DBStatPerks, {cascade: true})
+  @OneToOne(() => DBStatPerks, {cascade: true, eager: true})
   @JoinColumn()
   statPerks: DBStatPerks;
 
-  @OneToMany(() => DBStyle, "", {cascade: true})
+  @OneToMany(() => DBStyle, (style) => style.dummyFieldForManyToOne, {cascade: true, eager: true})
   styles: DBStyle[];
 
   public static CreateFromApi(perks: any): DBPerks {
@@ -131,9 +175,16 @@ export class DBPerks {
     dbPerks.statPerks = DBStatPerks.CreateFromApi(perks.statPerks);
     dbPerks.styles = DBStyle.CreateFromApi(perks.styles);
 
-    console.log("DBPerks.CreateFromApi dbPerks", dbPerks);
     return dbPerks;
-  } 
+  }
+  
+  compareAgainstApi(apiPerks: any): boolean{
+    let res = (this.statPerks.compareAgainstApi(apiPerks.statPerks) &&
+      this.styles.every((style, i) => style.compareAgainstApi(apiPerks.styles[i]))
+    );
+    console.log("comparing perks...", res);
+    return res
+  }
 }
 
 @Entity({name: "participant"})
@@ -310,7 +361,7 @@ export class DBParticipant {
   @Column("integer", { name: "pentaKills"})
   pentaKills: number;
 
-  @OneToOne(() => DBPerks, {cascade: true})
+  @OneToOne(() => DBPerks, {cascade: true, eager: true})
   @JoinColumn()
   perks: DBPerks;
 
@@ -461,7 +512,7 @@ export class DBParticipant {
   @Column("integer", { name: "win"})
   win: boolean;
 
-  public static createFromApi(matchDTO: MatchDTO): DBParticipant[] {
+  public static CreateFromApi(matchDTO: MatchDTO): DBParticipant[] {
     let dbParticipants = Array<DBParticipant>();
     
     matchDTO.info.participants.forEach(participant => {
@@ -606,12 +657,31 @@ export class DBParticipant {
 
     return dbParticipants;
   } 
+
+  compareAgainstApi(apiParticipant: any): boolean{
+    console.log("comparing Participant...", this.participantId, apiParticipant.participantId);
+    
+    
+    return (this.participantId == apiParticipant.participantId &&
+      this.perks.compareAgainstApi(apiParticipant.perks) &&
+      this.champExperience == apiParticipant.champExperience &&
+      this.champLevel == apiParticipant.champLevel &&
+      this.championId == apiParticipant.championId &&
+      this.championName == apiParticipant.championName &&
+      this.summoner2Casts == apiParticipant.summoner2Casts &&
+      this.summoner2Id == apiParticipant.summoner2Id &&
+      this.visionScore == apiParticipant.visionScore);
+  }
 }
 
 @Entity({name: "ban"})
 export class DBBan {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @ManyToOne(() => DBBan)
+  @JoinColumn({ name: 'dbTeam_id' })
+  dummyFieldForManyToOne: unknown;
 
   @Column("integer", { name: "championId"})
   championId: number;
@@ -628,11 +698,233 @@ export class DBBan {
       dbBan.championId = ban.championId;
       dbBan.pickTurn = ban.pickTurn;
 
-      dbBans.push(ban);
+      dbBans.push(dbBan);
     })
 
     return dbBans;
   }
+
+  compareAgainstApi(apiBan: any): boolean{
+    console.log("comparing ban...");
+    return (this.championId == apiBan.championId &&
+      this.pickTurn == apiBan.pickTurn);
+  }
+}
+
+@Entity({name: "baron"})
+export class DBBaron {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column("boolean", { name: "first"})
+  first: boolean;
+
+  @Column("integer", { name: "kills"})
+  kills: number;
+
+  public static CreateFromApi(baron: any): DBBaron {
+    let dbBaron = new DBBaron();
+
+    dbBaron.first = baron.first;
+    dbBaron.kills = baron.kills;
+
+    return dbBaron;
+  }
+
+  compareAgainstApi(objective: any): boolean{
+    console.log("comparing baron...");
+    return(this.first == objective.first &&
+      this.kills == objective.kills);
+  }
+}
+
+@Entity({name: "championKills"})
+export class DBChampionKills {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column("boolean", { name: "first"})
+  first: boolean;
+
+  @Column("integer", { name: "kills"})
+  kills: number;
+
+  public static CreateFromApi(championKills: any): DBChampionKills {
+    let dbChampionKills = new DBChampionKills();
+
+    dbChampionKills.first = championKills.first;
+    dbChampionKills.kills = championKills.kills;
+
+    return dbChampionKills;
+  }
+
+  compareAgainstApi(objective: any): boolean{
+    console.log("comparing championKills...");
+    return(this.first == objective.first &&
+      this.kills == objective.kills);
+  }
+}
+
+@Entity({name: "dragon"})
+export class DBDragon {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column("boolean", { name: "first"})
+  first: boolean;
+
+  @Column("integer", { name: "kills"})
+  kills: number;
+
+  public static CreateFromApi(dragon: any): DBDragon {
+    let dbDragon = new DBDragon();
+
+    dbDragon.first = dragon.first;
+    dbDragon.kills = dragon.kills;
+
+    return dbDragon;
+  }
+
+  compareAgainstApi(objective: any): boolean{
+    console.log("comparing dragon...");
+    return(this.first == objective.first &&
+      this.kills == objective.kills);
+  }
+}
+
+@Entity({name: "inhibitor"})
+export class DBInhibitor {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column("boolean", { name: "first"})
+  first: boolean;
+
+  @Column("integer", { name: "kills"})
+  kills: number;
+
+  public static CreateFromApi(inhibitor: any): DBInhibitor {
+    let dbInhibitor = new DBInhibitor();
+
+    dbInhibitor.first = inhibitor.first;
+    dbInhibitor.kills = inhibitor.kills;
+
+    return dbInhibitor;
+  }
+
+  compareAgainstApi(objective: any): boolean{
+    console.log("comparing inhibitor...");
+    return(this.first == objective.first &&
+      this.kills == objective.kills);
+  }
+}
+
+@Entity({name: "riftHerald"})
+export class DBRiftHerald {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column("boolean", { name: "first"})
+  first: boolean;
+
+  @Column("integer", { name: "kills"})
+  kills: number;
+
+  public static CreateFromApi(riftHerald: any): DBRiftHerald {
+    let dbRiftHerald = new DBRiftHerald();
+
+    dbRiftHerald.first = riftHerald.first;
+    dbRiftHerald.kills = riftHerald.kills;
+
+    return dbRiftHerald;
+  }
+
+  compareAgainstApi(objective: any): boolean{
+    console.log("comparing riftHerald...");
+    return(this.first == objective.first &&
+      this.kills == objective.kills);
+  }
+}
+
+@Entity({name: "tower"})
+export class DBTower {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column("boolean", { name: "first"})
+  first: boolean;
+
+  @Column("integer", { name: "kills"})
+  kills: number;
+
+  public static CreateFromApi(tower: any): DBTower {
+    let dbTower = new DBTower();
+
+    dbTower.first = tower.first;
+    dbTower.kills = tower.kills;
+
+    return dbTower;
+  }
+
+  compareAgainstApi(objective: any): boolean{
+    console.log("comparing tower...");
+    return(this.first == objective.first &&
+      this.kills == objective.kills);
+  }
+}
+
+@Entity({name: "objectives"})
+export class DBObjectives {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @OneToOne(() => DBBaron, {cascade: true, eager: true})
+  @JoinColumn()
+  baron: DBBaron;
+
+  @OneToOne(() => DBChampionKills, {cascade: true, eager: true})
+  @JoinColumn()
+  champion: DBChampionKills;
+
+  @OneToOne(() => DBDragon, {cascade: true, eager: true})
+  @JoinColumn()
+  dragon: DBDragon;
+
+  @OneToOne(() => DBInhibitor, {cascade: true, eager: true})
+  @JoinColumn()
+  inhibitor: DBInhibitor;
+
+  @OneToOne(() => DBRiftHerald, {cascade: true, eager: true})
+  @JoinColumn()
+  riftHerald: DBRiftHerald;
+
+  @OneToOne(() => DBTower, {cascade: true, eager: true})
+  @JoinColumn()
+  tower: DBTower;
+
+  public static CreateFromApi(objectives: any): DBObjectives {
+    let dbObjectives = new DBObjectives();
+
+    dbObjectives.baron = DBBaron.CreateFromApi(objectives.baron);
+    dbObjectives.champion = DBChampionKills.CreateFromApi(objectives.champion);
+    dbObjectives.dragon = DBDragon.CreateFromApi(objectives.dragon);
+    dbObjectives.inhibitor = DBInhibitor.CreateFromApi(objectives.inhibitor);
+    dbObjectives.riftHerald = DBRiftHerald.CreateFromApi(objectives.riftHerald);
+    dbObjectives.tower = DBTower.CreateFromApi(objectives.tower);
+
+    return dbObjectives;
+  }
+
+  compareAgainstApi(objective: any): boolean{
+    console.log("comparing objectives...");
+    return(this.baron.compareAgainstApi(objective.baron) &&
+    this.champion.compareAgainstApi(objective.champion) &&
+    this.dragon.compareAgainstApi(objective.dragon) &&
+    this.inhibitor.compareAgainstApi(objective.inhibitor) &&
+    this.riftHerald.compareAgainstApi(objective.riftHerald) &&
+    this.tower.compareAgainstApi(objective.tower))  
+  }
+
 }
 
 @Entity({name: "team"})
@@ -640,11 +932,19 @@ export class DBTeam {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToMany(() => DBBan, "", {cascade: true})
+  @ManyToOne(() => DBTeam)
+  @JoinColumn({ name: 'dbInfo_id' })
+  dummyFieldForManyToOne: unknown;
+
+  @OneToMany(() => DBBan, (ban) => ban.dummyFieldForManyToOne, {cascade: true, eager: true})
   bans: DBBan[];
   
-  // @OneToOne(() => DBObjectives, {cascade: true})
-  // objectives: DBObjectives;
+  // @OneToMany(() => DBFoo, (foo) => foo.dummyFieldForManyToOne, {cascade: true, eager: true})
+  // foos: DBFoo[];
+
+  @OneToOne(() => DBObjectives, {cascade: true, eager: true})
+  @JoinColumn()
+  objectives: DBObjectives;
   
   @Column("integer", { name: "teamId"})
   teamId: number;
@@ -652,20 +952,31 @@ export class DBTeam {
   @Column("boolean", { name: "win"})
   win: boolean;
 
-  public static createFromApi(matchDTO: MatchDTO): DBTeam[] {
+  public static CreateFromApi(matchDTO: MatchDTO): DBTeam[] {
     let dbTeams = new Array<DBTeam>();
 
     matchDTO.info.teams.forEach(team => {
       let dbTeam = new DBTeam();
       dbTeam.bans = DBBan.CreateFromApi(team);
-      //dbTeam.objectives = DBObjectives.CreateFromApi(matchDTO);
+      dbTeam.objectives = DBObjectives.CreateFromApi(team.objectives);
       dbTeam.teamId = team.teamId;
       dbTeam.win = team.win;
+
+      // dbTeam.foos = DBFoo.CreateFromApi(team);
 
       dbTeams.push(dbTeam);
     })
 
     return dbTeams;
+  }
+
+  compareAgainstApi(apiTeam: any): boolean{
+    console.log("comparing Team...");
+    return (this.teamId == apiTeam.teamId &&
+      this.win == apiTeam.win &&
+      this.bans.every((ban: DBBan, i: number) => ban.compareAgainstApi(apiTeam.bans[i])) &&
+      this.objectives.compareAgainstApi(apiTeam.objectives)
+    );
   }
 }
 
@@ -701,10 +1012,6 @@ export class DBInfo {
   @Column("integer", { name: "mapId"})
   mapId: number;
 
-  //TODO define field dummyFieldForManyToOne on all OneToMany child models (see participant)
-  //TODO also then add eager: true on all OneToMany decorators
-  //TODO finaly test loading a match from db and check if EVERYRTHING is set
-
   @OneToMany(() => DBParticipant, (participant) => participant.dummyFieldForManyToOne, {cascade: true, eager: true})
   participants: DBParticipant[];
 
@@ -714,13 +1021,14 @@ export class DBInfo {
   @Column("integer", { name: "queueId"})
   queueId: number;
 
-  @OneToMany(() => DBTeam, "", {cascade: true})
+  // @OneToMany(() => DBTeam, "", {cascade: true})
+  @OneToMany(() => DBTeam, (team) => team.dummyFieldForManyToOne, {cascade: true, eager: true})
   teams: DBTeam[];
 
   @Column("varchar", { name: "tournamentCode", nullable: true,})
   tournamentCode: string;
 
-  public static createFromApi(matchDTO: MatchDTO): DBInfo{
+  public static CreateFromApi(matchDTO: MatchDTO): DBInfo{
     let info = matchDTO.info;
     let dbInfo = new DBInfo();
     dbInfo.gameCreation = info.gameCreation;
@@ -732,13 +1040,25 @@ export class DBInfo {
     dbInfo.gameType = info.gameType;
     dbInfo.gameVersion = info.gameVersion;
     dbInfo.mapId = info.mapId;
-    dbInfo.participants = DBParticipant.createFromApi(matchDTO);
+    dbInfo.participants = DBParticipant.CreateFromApi(matchDTO);
     dbInfo.platformId = info.platformId;
     dbInfo.queueId = info.queueId;
-    dbInfo.teams = DBTeam.createFromApi(matchDTO);
+    dbInfo.teams = DBTeam.CreateFromApi(matchDTO);
     dbInfo.tournamentCode = info.tournamentCode;
 
     return dbInfo;
+  }
+
+  compareAgainstApi(apiInfo: any): boolean{
+    console.log("comparing Info...");
+    return (this.gameCreation == apiInfo.gameCreation &&
+      this.gameDuration == apiInfo.gameDuration &&
+      this.gameId == apiInfo.gameId &&
+      this.gameMode == apiInfo.gameMode &&
+      this.gameStartTimestamp == this.gameStartTimestamp &&
+      this.participants.every((p: DBParticipant, i: number) => p.compareAgainstApi(apiInfo.participants[i])) &&
+      this.teams.every((t: DBTeam, i: number) => t.compareAgainstApi(apiInfo.teams[i]))
+    );
   }
 }
 
@@ -747,19 +1067,24 @@ export class DBMatch {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => DBMetadata, {cascade: true})
+  @OneToOne(() => DBMetadata, {cascade: true, eager: true})
   @JoinColumn()
   metadata: DBMetadata;
 
-  @OneToOne(() => DBInfo, {cascade: true})
+  @OneToOne(() => DBInfo, {cascade: true, eager: true})
   @JoinColumn()
   info: DBInfo;
 
-  public static createFromApi(matchDTO: MatchDTO): DBMatch{
+  public static CreateFromApi(matchDTO: MatchDTO): DBMatch{
     let dbMatch = new DBMatch();
-    dbMatch.metadata = DBMetadata.createFromApi(matchDTO);
-    dbMatch.info = DBInfo.createFromApi(matchDTO);
+    dbMatch.metadata = DBMetadata.CreateFromApi(matchDTO);
+    dbMatch.info = DBInfo.CreateFromApi(matchDTO);
 
     return dbMatch;
+  }
+
+  compareAgainstApiMatch(apiMatch: MatchDTO): boolean {
+    return (this.metadata.compareAgainstApi(apiMatch.metadata) &&
+      this.info.compareAgainstApi(apiMatch.info))
   }
 }

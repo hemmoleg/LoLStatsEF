@@ -116,11 +116,11 @@ const init = async () =>
     
     await dbReaderMyGamesNew.establishDBConnectionV5("C:\\My Projects\\LoLStatsEF\\my_games_match_v5.db");
     await dbReaderMyGamesNew.createTablesV5();
-    await dbReaderMyGamesNew.testDB();
+    await dbReaderMyGamesNew.createRepositories();
 
     const galeforce = new GaleforceModule({
       'riot-api': {
-        key: 'RGAPI-850278e0-f160-45f3-b726-cf72bd010148',
+        key: 'RGAPI-c2a95aa3-7c93-4415-9ea4-be4445c04e27',
       },
       'rate-limit': {
         type: 'bottleneck',
@@ -139,15 +139,34 @@ const init = async () =>
     let account = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).name("hemmoleg").exec();
     console.log(account);
 
-    let match = await galeforce.lol.match.match().matchId("EUW1_5607406272").region(galeforce.region.riot.EUROPE).exec();
-    // console.log("match", match);
-    console.log("got match gameCreation", match.info.gameCreation,
-      "match.info.gameId", match.info.gameId,
-      "match.info.gameMode", match.info.gameMode,
-      "match.info.queueId", match.info.queueId);
+    let apiMatch1 = await galeforce.lol.match.match().matchId("EUW1_5607406272").region(galeforce.region.riot.EUROPE).exec();
+    
+    console.log("got match gameCreation", apiMatch1.info.gameCreation,
+      "match.info.gameId", apiMatch1.info.gameId,
+      "match.info.gameMode", apiMatch1.info.gameMode,
+      "match.info.queueId", apiMatch1.info.queueId);
 
-    await dbReaderMyGamesNew.writeMatch(DBMatch.createFromApi(match));
+    let writtenMatch1 = await dbReaderMyGamesNew.writeMatch(DBMatch.CreateFromApi(apiMatch1));
+    let dbMatch1 = await dbReaderMyGamesNew.getMatchByGameId(apiMatch1.info.gameId)
 
+    let compareResult1 = dbMatch1.compareAgainstApiMatch(apiMatch1);
+    // console.log("compare result", compareResult1);
+
+
+    let apiMatch2 = await galeforce.lol.match.match().matchId("EUW1_5355327881").region(galeforce.region.riot.EUROPE).exec();
+    
+    console.log("got match gameCreation", apiMatch2.info.gameCreation,
+      "match.info.gameId", apiMatch2.info.gameId,
+      "match.info.gameMode", apiMatch2.info.gameMode,
+      "match.info.queueId", apiMatch2.info.queueId);
+
+    let writtenMatch2 = await dbReaderMyGamesNew.writeMatch(DBMatch.CreateFromApi(apiMatch2));
+    let dbMatch2 = await dbReaderMyGamesNew.getMatchByGameId(apiMatch2.info.gameId)
+
+    let compareResult2 = dbMatch2.compareAgainstApiMatch(apiMatch2);
+    // console.log("compare result", compareResult2);
+
+    console.log("compare result 1", compareResult1, "compare result 2", compareResult2);
     console.log("saved match to DB");
 
     return;
