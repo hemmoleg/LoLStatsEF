@@ -9,6 +9,8 @@ import GaleforceModule = require("galeforce");
 import { RiotRegion } from "galeforce/dist/riot-api";
 import { CreatePayloadProxy, Payload } from "galeforce/dist/galeforce/actions/payload";
 import { DBMatch } from "./entitiesV5/DBMatch";
+import { ApiRequester } from "./apiRequester";
+import { MainController } from "./mainController";
 
 const ipc = require("electron-better-ipc");
 
@@ -61,13 +63,10 @@ const createWindow = async () =>
 // return;
     // Create the browser window
    
-    mainWindow = new BrowserWindow(windowOptionsMain);
-
-    
+    mainWindow = new BrowserWindow(windowOptionsMain); 
 
     //track window state
     windowStateKeeperMain.track(mainWindow);
-    
 
     // and load the index.html of the app.
     mainWindow.loadURL(`file://${__dirname}/index.html`);
@@ -113,99 +112,12 @@ const init = async () =>
 
     // ipcMain.answerRenderer("establishDBConnection2", async (filePath:string) => dbReaderGamesNew.establishDBConnection(filePath))
     // ipcMain.answerRenderer("getAllMatchIds", async () => dbReaderGamesNew.getAllMatchIds())
-    
-    await dbReaderMyGamesNew.establishDBConnectionV5("C:\\My Projects\\LoLStatsEF\\my_games_match_v5.db");
-    await dbReaderMyGamesNew.createTablesV5();
-    await dbReaderMyGamesNew.createRepositories();
 
-    const galeforce = new GaleforceModule({
-      'riot-api': {
-        key: 'RGAPI-c2a95aa3-7c93-4415-9ea4-be4445c04e27',
-      },
-      'rate-limit': {
-        type: 'bottleneck',
-        options: {
-          intervals: {
-              120: 100,
-              1: 20,
-          },
-          'max-concurrent': 1
-        },
-      },
-      'debug':['rate-limit']
-    });
-
-    //my puuid: 8KF6_NTmY0iDJaesoSAhkKOw8ylDc9yWi7_zggXCfI3ZRQYqWDNoCCwTVeVyQgVIdNRyx-RBBg12xQ
-    let account = await galeforce.lol.summoner().region(galeforce.region.lol.EUROPE_WEST).name("hemmoleg").exec();
-    console.log(account);
-
-    let apiMatch1 = await galeforce.lol.match.match().matchId("EUW1_5607406272").region(galeforce.region.riot.EUROPE).exec();
-    
-    console.log("got match gameCreation", apiMatch1.info.gameCreation,
-      "match.info.gameId", apiMatch1.info.gameId,
-      "match.info.gameMode", apiMatch1.info.gameMode,
-      "match.info.queueId", apiMatch1.info.queueId);
-
-    let writtenMatch1 = await dbReaderMyGamesNew.writeMatch(DBMatch.CreateFromApi(apiMatch1));
-    let dbMatch1 = await dbReaderMyGamesNew.getMatchByGameId(apiMatch1.info.gameId)
-
-    let compareResult1 = dbMatch1.compareAgainstApiMatch(apiMatch1);
-    // console.log("compare result", compareResult1);
-
-
-    let apiMatch2 = await galeforce.lol.match.match().matchId("EUW1_5355327881").region(galeforce.region.riot.EUROPE).exec();
-    
-    console.log("got match gameCreation", apiMatch2.info.gameCreation,
-      "match.info.gameId", apiMatch2.info.gameId,
-      "match.info.gameMode", apiMatch2.info.gameMode,
-      "match.info.queueId", apiMatch2.info.queueId);
-
-    let writtenMatch2 = await dbReaderMyGamesNew.writeMatch(DBMatch.CreateFromApi(apiMatch2));
-    let dbMatch2 = await dbReaderMyGamesNew.getMatchByGameId(apiMatch2.info.gameId)
-
-    let compareResult2 = dbMatch2.compareAgainstApiMatch(apiMatch2);
-    // console.log("compare result", compareResult2);
-
-    console.log("compare result 1", compareResult1, "compare result 2", compareResult2);
-    console.log("saved match to DB");
-
-    return;
-
-    let start = 0;
-    let stop = false;
-
-    let mostRecentGameTimestamp = await dbReaderMyGamesNew.getMostRecentGameTimestamp();
-    console.log("most recent game time in db:", mostRecentGameTimestamp);
-
-    do{
-      let payload: Payload = {
-        _id: "getMatches", 
-        region:RiotRegion.EUROPE, 
-        puuid:account.puuid,
-        query: {start: start}
-      };
-
-      console.log("getting matches from", start, "to", start+20);
-      let matches = await galeforce.lol.match.list().set(payload).exec();
-      console.log("got matches", start, "till", start + matches.length);
-      // by default the above call to riot returns 20 matches. If less matches are returned that means that ther no more
-      // matches than the ones which were just returned.
-      if(matches.length == 20){
-        console.log("checking last match timestamp...");
-        let match = await galeforce.lol.match.match().region(RiotRegion.EUROPE).matchId(matches[matches.length-1]).exec();
-        if(match.info.gameCreation > mostRecentGameTimestamp){
-          console.log("last match creation still bigger than mostRecentGameTimestamp", match.info.gameCreation, ">", mostRecentGameTimestamp);
-          start += matches.length;;
-        }
-      }
-      else{
-        console.log("done. latest match from riot found in range from", start, "-", start + matches.length);
-        stop = true;
-        console.log("last match id", matches[matches.length - 1]);
-      }
-    }while(!stop);
+    let mainController = await MainController.init();
+    //mainController.writeTwoTestMatchesInDBAndCompareResultAgainstApi();
+    //mainController.printAllMatchesCreatinInConsole();
+    mainController.temp();
 };
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.

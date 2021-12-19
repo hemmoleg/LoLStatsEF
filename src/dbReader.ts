@@ -14,6 +14,7 @@ export class DBReader
     private connection: Connection;
 
     MatchRepositoryV5: Repository<DBMatch>;
+    InfoRepository: Repository<DBInfo>;
 
     MatchRepository: Repository<Match>;
 
@@ -47,7 +48,7 @@ export class DBReader
     }
 
     async createTablesV5(){
-      try{ await this.connection.synchronize(true); }
+      try{ await this.connection.synchronize(); }
       catch(e){
         console.log("ERRORRROOROR", e);
       }
@@ -59,49 +60,31 @@ export class DBReader
         DBMatch
       );
 
+      this.InfoRepository = this.connection.getRepository(
+        DBInfo
+      );
+
       let numMatches = await this.MatchRepositoryV5.createQueryBuilder().getCount();
       console.log("just testing the connection: numMatches", numMatches);
     }
 
     async writeMatch(dbMatch: DBMatch): Promise<DBMatch>{
-      let savedMatch = await this.MatchRepositoryV5.save(dbMatch);
-      console.log("saved match");
+      let savedMatch: DBMatch;
+      try{
+        savedMatch= await this.MatchRepositoryV5.save(dbMatch);
+        console.log("saved match");
+      }catch(e){
+        console.log("could not save match", e);
+      }
       return savedMatch;
       // console.log("saved match", savedMatch);
 
       // let numMatches = await this.MatchRepositoryV5.createQueryBuilder().getCount();
       // console.log("numMatches", numMatches);
 
-      let matches = await this.MatchRepositoryV5.find({ relations: ["info", "metadata"] });
-      console.log("dbReader.writeMatch returning first match from matchRepository");
-      return matches[0];
-
-      // let infoRepository = this.connection.getRepository(DBInfo);
-      // let numInfos = await infoRepository.createQueryBuilder().getCount();
-      // console.log("numInfos", numInfos);
-
-      //let info = await infoRepository.find({ relations: ["participants"] });
-      // let info = await infoRepository.findOne();
-      // console.log("info", info);
-
-      // console.log("style from db via match", matches[0].info.participants[0].perks.styles);
-      // console.log("selections from db via match", matches[0].info.participants[0].perks.styles[0].selections);
-
-      // let perksRepository = await this.connection.getRepository(DBPerks);
-      // let perks = await perksRepository.findOne();
-      // console.log("perks from db via perks", perks);
-
-
-      // let participantRepository = await this.connection.getRepository(DBParticipant);
-      // let participant = await participantRepository.findOne();
-      // console.log("participant from db via participant", participant.perks);
-
-      // works
-      // console.log("team 1 bans", matches[0].info.teams[0].bans);
-      // console.log("team 2 bans", matches[0].info.teams[1].bans);
-
-      // await this.connection.close();
-      // this.connection.manager.save
+      // let matches = await this.MatchRepositoryV5.find({ relations: ["info", "metadata"] });
+      // console.log("dbReader.writeMatch returning first match from matchRepository");
+      // return matches[0];
     }
 
     async getMatchByGameId(matchId: number): Promise<DBMatch> {
@@ -134,6 +117,14 @@ export class DBReader
       return match;
     }
 
+    async getLatestMatchCreationDate(): Promise<number>{
+      let info = await this.InfoRepository
+        .createQueryBuilder()
+        .addSelect("MAX(gameCreation)")
+        .getOne();
+      return info.gameCreation;
+    }
+
     async openConnectionV5(filePath: string)
     {
         if (this.connection && this.connection.isConnected) {
@@ -164,9 +155,9 @@ export class DBReader
           console.log("DBReader", "connection open");
         } catch (e){
           console.log("DBReader", "could not open connection", e);
-        }
+      }
 
-        return connectionTemp;
+      return connectionTemp;
     }
 
 
