@@ -117,12 +117,30 @@ export class DBReader
       return match;
     }
 
-    async getLatestMatchCreationDate(): Promise<number>{
+    async getAllMatches(): Promise<DBMatch[]> {
+      // return await this.MatchRepositoryV5
+      //   .createQueryBuilder('match')
+      //   .leftJoinAndSelect('match.info', 'info')
+      //   .leftJoinAndSelect('match.info.teams', 'team')
+      //   .leftJoinAndSelect('match.metadata', 'metadata')
+      //   .getMany();
+
+      return await this.MatchRepositoryV5.find();
+    }
+
+    async getAllInfos(): Promise<DBInfo[]> {
+      return await this.InfoRepository.find();
+    }
+
+    async getLatestMatchCreation(): Promise<number>{
       let info = await this.InfoRepository
         .createQueryBuilder()
         .addSelect("MAX(gameCreation)")
         .getOne();
-      return info.gameCreation;
+      if(info)
+        return info.gameCreation;
+      else
+        return -1;
     }
 
     async openConnectionV5(filePath: string)

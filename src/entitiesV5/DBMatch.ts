@@ -25,7 +25,7 @@ export class DBMetadata {
 
 
   compareAgainstApi(apiMetadata: any): boolean{
-    console.log("comparing Metadata...");
+    //console.log("comparing Metadata...");
     return (this.dataVersion == apiMetadata.dataVersion &&
         this.matchId == apiMetadata.matchId &&
         this.participants.every((p, i) => p == apiMetadata.participants[i])
@@ -77,7 +77,7 @@ export class DBSelection {
       this.var2 == apiSelection.var2 &&
       this.var3 == apiSelection.var3);
 
-    console.log("comparing Selection...", res);
+    //console.log("compared Selection...", res);
     return res;
   }
 }
@@ -108,7 +108,7 @@ export class DBStatPerks {
     let res = (this.defense == apiStatPerks.defense &&
       this.flex == apiStatPerks.flex &&
       this.offense == apiStatPerks.offense);
-    console.log("comparing StatPerks...", res);
+    //console.log("compared StatPerks...", res);
     return res;
   }
 }
@@ -152,7 +152,7 @@ export class DBStyle {
       this.selections.every((s, i) => s.compareAgainstApi(apiStyle.selections[i])) &&
       this.style == apiStyle.style
     );
-    console.log("comparing style...", res);
+    //console.log("compared style...", res);
     return res;
   }
 }
@@ -182,7 +182,7 @@ export class DBPerks {
     let res = (this.statPerks.compareAgainstApi(apiPerks.statPerks) &&
       this.styles.every((style, i) => style.compareAgainstApi(apiPerks.styles[i]))
     );
-    console.log("comparing perks...", res);
+    //console.log("compared perks...", res);
     return res
   }
 }
@@ -659,8 +659,7 @@ export class DBParticipant {
   } 
 
   compareAgainstApi(apiParticipant: any): boolean{
-    console.log("comparing Participant...", this.participantId, apiParticipant.participantId);
-    
+    //console.log("comparing Participant...", this.participantId, apiParticipant.participantId);
     
     return (this.participantId == apiParticipant.participantId &&
       this.perks.compareAgainstApi(apiParticipant.perks) &&
@@ -705,7 +704,7 @@ export class DBBan {
   }
 
   compareAgainstApi(apiBan: any): boolean{
-    console.log("comparing ban...");
+    //console.log("comparing ban...");
     return (this.championId == apiBan.championId &&
       this.pickTurn == apiBan.pickTurn);
   }
@@ -732,7 +731,7 @@ export class DBBaron {
   }
 
   compareAgainstApi(objective: any): boolean{
-    console.log("comparing baron...");
+    //console.log("comparing baron...");
     return(this.first == objective.first &&
       this.kills == objective.kills);
   }
@@ -759,7 +758,7 @@ export class DBChampionKills {
   }
 
   compareAgainstApi(objective: any): boolean{
-    console.log("comparing championKills...");
+    //console.log("comparing championKills...");
     return(this.first == objective.first &&
       this.kills == objective.kills);
   }
@@ -786,7 +785,7 @@ export class DBDragon {
   }
 
   compareAgainstApi(objective: any): boolean{
-    console.log("comparing dragon...");
+    //console.log("comparing dragon...");
     return(this.first == objective.first &&
       this.kills == objective.kills);
   }
@@ -813,7 +812,7 @@ export class DBInhibitor {
   }
 
   compareAgainstApi(objective: any): boolean{
-    console.log("comparing inhibitor...");
+    //console.log("comparing inhibitor...");
     return(this.first == objective.first &&
       this.kills == objective.kills);
   }
@@ -840,7 +839,7 @@ export class DBRiftHerald {
   }
 
   compareAgainstApi(objective: any): boolean{
-    console.log("comparing riftHerald...");
+    //console.log("comparing riftHerald...");
     return(this.first == objective.first &&
       this.kills == objective.kills);
   }
@@ -867,7 +866,7 @@ export class DBTower {
   }
 
   compareAgainstApi(objective: any): boolean{
-    console.log("comparing tower...");
+    //console.log("comparing tower...");
     return(this.first == objective.first &&
       this.kills == objective.kills);
   }
@@ -916,7 +915,7 @@ export class DBObjectives {
   }
 
   compareAgainstApi(objective: any): boolean{
-    console.log("comparing objectives...");
+    //console.log("comparing objectives...");
     return(this.baron.compareAgainstApi(objective.baron) &&
     this.champion.compareAgainstApi(objective.champion) &&
     this.dragon.compareAgainstApi(objective.dragon) &&
@@ -971,7 +970,7 @@ export class DBTeam {
   }
 
   compareAgainstApi(apiTeam: any): boolean{
-    console.log("comparing Team...");
+    //console.log("comparing Team...");
     return (this.teamId == apiTeam.teamId &&
       this.win == apiTeam.win &&
       this.bans.every((ban: DBBan, i: number) => ban.compareAgainstApi(apiTeam.bans[i])) &&
@@ -1050,7 +1049,7 @@ export class DBInfo {
   }
 
   compareAgainstApi(apiInfo: any): boolean{
-    console.log("comparing Info...");
+    //console.log("comparing Info...");
     return (this.gameCreation == apiInfo.gameCreation &&
       this.gameDuration == apiInfo.gameDuration &&
       this.gameId == apiInfo.gameId &&

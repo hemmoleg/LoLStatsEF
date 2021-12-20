@@ -13,7 +13,7 @@ export class ApiRequester{
     let instance = new ApiRequester();
     instance.galeforce = new GaleforceModule({
       'riot-api': {
-        key: 'RGAPI-4a0a2032-e035-4207-ad62-bead008c9a06',
+        key: 'RGAPI-f5c6b673-01f7-47de-89ab-3a4fad7275f7',
       },
       'rate-limit': {
         type: 'bottleneck',
