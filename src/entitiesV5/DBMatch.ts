@@ -1,5 +1,6 @@
 import { MatchDTO } from "galeforce/dist/galeforce/interfaces/dto";
 import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany, JoinTable, ManyToOne } from "typeorm";
+import Galeforce from 'galeforce';
 
 @Entity({name: "metadata"})
 export class DBMetadata {
@@ -15,11 +16,11 @@ export class DBMetadata {
   @Column("simple-array", { name: "participants"})
   participants: string[];
 
-  public static CreateFromApi(matchDTO: MatchDTO): DBMetadata {
+  public static CreateFromApi(metadata: MetaData): DBMetadata {
     let dbMetadata = new DBMetadata();
-    dbMetadata.dataVersion = matchDTO.metadata.dataVersion;
-    dbMetadata.matchId = matchDTO.metadata.matchId;
-    dbMetadata.participants = matchDTO.metadata.participants;
+    dbMetadata.dataVersion = metadata.dataVersion;
+    dbMetadata.matchId = metadata.matchId;
+    dbMetadata.participants = metadata.participants;
     return dbMetadata;
   }
 
@@ -56,7 +57,7 @@ export class DBSelection {
   @Column("integer", { name: "var3"})
   var3: number;
 
-  public static CreateFromApi(selctions: any): DBSelection[] {
+  public static CreateFromApi(selctions: Selection[]): DBSelection[] {
     let dbSelections = new Array<DBSelection>();
     
     selctions.forEach(selction => {
@@ -96,7 +97,7 @@ export class DBStatPerks {
   @Column("integer", { name: "offense"})
   offense: number;
 
-  public static CreateFromApi(statperks: any): DBStatPerks {
+  public static CreateFromApi(statperks: StatPerks): DBStatPerks {
     let dbStatperks = new DBStatPerks();
     dbStatperks.defense = statperks.defense;
     dbStatperks.flex = statperks.flex;
@@ -131,7 +132,7 @@ export class DBStyle {
   @Column("integer", { name: "style"})
   style: number;
 
-  public static CreateFromApi(styles: any): DBStyle[] {
+  public static CreateFromApi(styles: Style[]): DBStyle[] {
     let dbStyles = Array<DBStyle>();
 
     for(let style of styles){
@@ -169,7 +170,7 @@ export class DBPerks {
   @OneToMany(() => DBStyle, (style) => style.dummyFieldForManyToOne, {cascade: true, eager: true})
   styles: DBStyle[];
 
-  public static CreateFromApi(perks: any): DBPerks {
+  public static CreateFromApi(perks: Perks): DBPerks {
     let dbPerks = new DBPerks();
 
     dbPerks.statPerks = DBStatPerks.CreateFromApi(perks.statPerks);
@@ -512,10 +513,12 @@ export class DBParticipant {
   @Column("integer", { name: "win"})
   win: boolean;
 
-  public static CreateFromApi(matchDTO: MatchDTO): DBParticipant[] {
+  //public static CreateFromApi(matchDTO: MatchDTO): DBParticipant[] {
+  public static CreateFromApi(participants: Participant[]): DBParticipant[] {  
     let dbParticipants = Array<DBParticipant>();
     
-    matchDTO.info.participants.forEach(participant => {
+    //matchDTO.info.participants.forEach(participant => {
+    participants.forEach(participant => {
       let dbParticipant = new DBParticipant();
 
       dbParticipant.assists = participant.assists;
@@ -688,10 +691,10 @@ export class DBBan {
   @Column("integer", { name: "pickTurn"})
   pickTurn: number;
 
-  public static CreateFromApi(team: any): DBBan[] {
+  public static CreateFromApi(bans: Ban[]): DBBan[] {
     let dbBans = new Array<DBBan>();
 
-    team.bans.forEach(ban => {
+    bans.forEach(ban => {
 
       let dbBan = new DBBan();
       dbBan.championId = ban.championId;
@@ -721,7 +724,7 @@ export class DBBaron {
   @Column("integer", { name: "kills"})
   kills: number;
 
-  public static CreateFromApi(baron: any): DBBaron {
+  public static CreateFromApi(baron: Baron): DBBaron {
     let dbBaron = new DBBaron();
 
     dbBaron.first = baron.first;
@@ -748,7 +751,7 @@ export class DBChampionKills {
   @Column("integer", { name: "kills"})
   kills: number;
 
-  public static CreateFromApi(championKills: any): DBChampionKills {
+  public static CreateFromApi(championKills: ChampionKills): DBChampionKills {
     let dbChampionKills = new DBChampionKills();
 
     dbChampionKills.first = championKills.first;
@@ -775,7 +778,7 @@ export class DBDragon {
   @Column("integer", { name: "kills"})
   kills: number;
 
-  public static CreateFromApi(dragon: any): DBDragon {
+  public static CreateFromApi(dragon: Dragon): DBDragon {
     let dbDragon = new DBDragon();
 
     dbDragon.first = dragon.first;
@@ -802,7 +805,7 @@ export class DBInhibitor {
   @Column("integer", { name: "kills"})
   kills: number;
 
-  public static CreateFromApi(inhibitor: any): DBInhibitor {
+  public static CreateFromApi(inhibitor: Inhibitor): DBInhibitor {
     let dbInhibitor = new DBInhibitor();
 
     dbInhibitor.first = inhibitor.first;
@@ -829,7 +832,7 @@ export class DBRiftHerald {
   @Column("integer", { name: "kills"})
   kills: number;
 
-  public static CreateFromApi(riftHerald: any): DBRiftHerald {
+  public static CreateFromApi(riftHerald: RiftHerald): DBRiftHerald {
     let dbRiftHerald = new DBRiftHerald();
 
     dbRiftHerald.first = riftHerald.first;
@@ -856,7 +859,7 @@ export class DBTower {
   @Column("integer", { name: "kills"})
   kills: number;
 
-  public static CreateFromApi(tower: any): DBTower {
+  public static CreateFromApi(tower: Tower): DBTower {
     let dbTower = new DBTower();
 
     dbTower.first = tower.first;
@@ -901,7 +904,7 @@ export class DBObjectives {
   @JoinColumn()
   tower: DBTower;
 
-  public static CreateFromApi(objectives: any): DBObjectives {
+  public static CreateFromApi(objectives: Objectives): DBObjectives {
     let dbObjectives = new DBObjectives();
 
     dbObjectives.baron = DBBaron.CreateFromApi(objectives.baron);
@@ -951,17 +954,17 @@ export class DBTeam {
   @Column("boolean", { name: "win"})
   win: boolean;
 
-  public static CreateFromApi(matchDTO: MatchDTO): DBTeam[] {
+  //public static CreateFromApi(matchDTO: MatchDTO): DBTeam[] {
+  public static CreateFromApi(teams: Team[]): DBTeam[] {  
     let dbTeams = new Array<DBTeam>();
 
-    matchDTO.info.teams.forEach(team => {
+    //matchDTO.info.teams.forEach(team => {
+    teams.forEach(team => {
       let dbTeam = new DBTeam();
-      dbTeam.bans = DBBan.CreateFromApi(team);
+      dbTeam.bans = DBBan.CreateFromApi(team.bans);
       dbTeam.objectives = DBObjectives.CreateFromApi(team.objectives);
       dbTeam.teamId = team.teamId;
       dbTeam.win = team.win;
-
-      // dbTeam.foos = DBFoo.CreateFromApi(team);
 
       dbTeams.push(dbTeam);
     })
@@ -1027,8 +1030,8 @@ export class DBInfo {
   @Column("varchar", { name: "tournamentCode", nullable: true,})
   tournamentCode: string;
 
-  public static CreateFromApi(matchDTO: MatchDTO): DBInfo{
-    let info = matchDTO.info;
+  public static CreateFromApi(info: Info): DBInfo{
+    //let info = matchDTO.info;
     let dbInfo = new DBInfo();
     dbInfo.gameCreation = info.gameCreation;
     dbInfo.gameDuration = info.gameDuration;
@@ -1039,10 +1042,10 @@ export class DBInfo {
     dbInfo.gameType = info.gameType;
     dbInfo.gameVersion = info.gameVersion;
     dbInfo.mapId = info.mapId;
-    dbInfo.participants = DBParticipant.CreateFromApi(matchDTO);
+    dbInfo.participants = DBParticipant.CreateFromApi(info.participants);
     dbInfo.platformId = info.platformId;
     dbInfo.queueId = info.queueId;
-    dbInfo.teams = DBTeam.CreateFromApi(matchDTO);
+    dbInfo.teams = DBTeam.CreateFromApi(info.teams);
     dbInfo.tournamentCode = info.tournamentCode;
 
     return dbInfo;
@@ -1061,6 +1064,23 @@ export class DBInfo {
   }
 }
 
+type MetaData = Galeforce.dto.MatchDTO['metadata'];
+type Info = Galeforce.dto.MatchDTO['info'];
+type Participant = Galeforce.dto.MatchDTO['info']['participants'][0];
+type Team = Galeforce.dto.MatchDTO['info']['teams'][0];
+type Objectives = Galeforce.dto.MatchDTO['info']['teams'][0]['objectives'];
+type Baron = Galeforce.dto.MatchDTO['info']['teams'][0]['objectives']['baron'];
+type ChampionKills = Galeforce.dto.MatchDTO['info']['teams'][0]['objectives']['champion'];
+type Dragon = Galeforce.dto.MatchDTO['info']['teams'][0]['objectives']['dragon'];
+type Inhibitor = Galeforce.dto.MatchDTO['info']['teams'][0]['objectives']['inhibitor'];
+type RiftHerald = Galeforce.dto.MatchDTO['info']['teams'][0]['objectives']['riftHerald'];
+type Tower = Galeforce.dto.MatchDTO['info']['teams'][0]['objectives']['tower'];
+type Ban = Galeforce.dto.MatchDTO['info']['teams'][0]['bans'][0];
+type Perks = Galeforce.dto.MatchDTO['info']['participants'][0]['perks'];
+type StatPerks = Galeforce.dto.MatchDTO['info']['participants'][0]['perks']['statPerks'];
+type Style = Galeforce.dto.MatchDTO['info']['participants'][0]['perks']['styles'][0];
+type Selection = Galeforce.dto.MatchDTO['info']['participants'][0]['perks']['styles'][0]['selections'][0];
+
 @Entity({name: "match"})
 export class DBMatch {
   @PrimaryGeneratedColumn()
@@ -1076,8 +1096,8 @@ export class DBMatch {
 
   public static CreateFromApi(matchDTO: MatchDTO): DBMatch{
     let dbMatch = new DBMatch();
-    dbMatch.metadata = DBMetadata.CreateFromApi(matchDTO);
-    dbMatch.info = DBInfo.CreateFromApi(matchDTO);
+    dbMatch.metadata = DBMetadata.CreateFromApi(matchDTO.metadata);
+    dbMatch.info = DBInfo.CreateFromApi(matchDTO.info);
 
     return dbMatch;
   }

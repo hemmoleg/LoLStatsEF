@@ -15,6 +15,7 @@ export class DBReader
 
     MatchRepositoryV5: Repository<DBMatch>;
     InfoRepository: Repository<DBInfo>;
+    ParticipantRepository: Repository<DBParticipant>;
 
     MatchRepository: Repository<Match>;
 
@@ -40,9 +41,6 @@ export class DBReader
         console.log("DBReader", "reader inited");
     }
 
-    // public set CacheDBreader(reader: CacheDBReader)
-    // { this.cacheDBReader = reader; }
-
     async establishDBConnectionV5(filePath: string){
       this.connection = await this.openConnectionV5(filePath);
     }
@@ -64,8 +62,21 @@ export class DBReader
         DBInfo
       );
 
-      let numMatches = await this.MatchRepositoryV5.createQueryBuilder().getCount();
-      console.log("just testing the connection: numMatches", numMatches);
+      this.ParticipantRepository = this.connection.getRepository(
+        DBParticipant
+      )
+    }
+
+    async getNumMatches(): Promise<number>{
+      return await this.MatchRepositoryV5.createQueryBuilder().getCount();
+    }
+
+    async getNumWins(puuid: string): Promise<number> {
+      return await this.ParticipantRepository.count({where: {puuid: puuid, win: 1}});
+    }
+
+    async getNumLoses(puuid: string): Promise<number> {
+      return await this.ParticipantRepository.count({where: {puuid: puuid, win: 0}});
     }
 
     async writeMatch(dbMatch: DBMatch): Promise<DBMatch>{
@@ -77,14 +88,6 @@ export class DBReader
         console.log("could not save match", e);
       }
       return savedMatch;
-      // console.log("saved match", savedMatch);
-
-      // let numMatches = await this.MatchRepositoryV5.createQueryBuilder().getCount();
-      // console.log("numMatches", numMatches);
-
-      // let matches = await this.MatchRepositoryV5.find({ relations: ["info", "metadata"] });
-      // console.log("dbReader.writeMatch returning first match from matchRepository");
-      // return matches[0];
     }
 
     async getMatchByGameId(matchId: number): Promise<DBMatch> {

@@ -67,6 +67,7 @@
     "@angular/compiler": "^12.2.13",
     "@angular/compiler-cli": "^12.2.13",
     "@angular/core": "^12.2.13",
+    "@angular/forms": "^12.2.13",
     "@angular/platform-browser": "^12.2.13",
     "@angular/platform-browser-dynamic": "^12.2.13",
     "electron": "^11.4.10",

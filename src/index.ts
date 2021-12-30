@@ -101,22 +101,23 @@ const init = async () =>
 {
     createWindow();
 
-    let dbReaderMyGamesNew = new DBReader();
+    
     // let dbReaderGamesNew = new DBReader();
-    ipcMain.answerRenderer("establishDBConnection", async (filePath:string) => dbReaderMyGamesNew.establishDBConnection(filePath))
-    ipcMain.answerRenderer("getNumMatches", async () => await dbReaderMyGamesNew.getNumMatches());
-    ipcMain.answerRenderer("getNumWins", async () => await dbReaderMyGamesNew.getNumWins());
-    ipcMain.answerRenderer("getNumLoses", async () => await dbReaderMyGamesNew.getNumLoses());
-    ipcMain.answerRenderer("getMostRecentGameTimestamp", async () => await dbReaderMyGamesNew.getMostRecentGameTimestamp());
-    ipcMain.answerRenderer("getMatchById", async (matchId: number) => await dbReaderMyGamesNew.getMatchById(matchId))
+    let mainController = new MainController();
+    ipcMain.answerRenderer('initDBReader', async (filePath:string) => {await mainController.initDBReader(filePath); return 0;})
+    ipcMain.answerRenderer('initApiRequester', async (apiKey: string) => { let res = await mainController.initApiRequester(apiKey);
+      if(res){
+        ipcMain.answerRenderer("getNumWins", async () => await mainController.dbReader.getNumWins(mainController.apiRequester.account.puuid));
+        ipcMain.answerRenderer("getNumLoses", async () => await mainController.dbReader.getNumLoses(mainController.apiRequester.account.puuid));
+      }
+      return res;
+    });
+    ipcMain.answerRenderer("getNumMatches", async () => await mainController.dbReader.getNumMatches());
+    ipcMain.answerRenderer("getMostRecentGameTimestamp", async () =>  await mainController.dbReader.getLatestMatchCreation());
+    ipcMain.answerRenderer("updateDB", (apiKey: string) => {
+      
+    });
 
-    // ipcMain.answerRenderer("establishDBConnection2", async (filePath:string) => dbReaderGamesNew.establishDBConnection(filePath))
-    // ipcMain.answerRenderer("getAllMatchIds", async () => dbReaderGamesNew.getAllMatchIds())
-
-    let mainController = await MainController.init();
-    //mainController.writeTwoTestMatchesInDBAndCompareResultAgainstApi();
-    //mainController.printAllMatchesCreatinInConsole();
-    mainController.temp();
 };
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

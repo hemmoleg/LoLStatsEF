@@ -8,16 +8,16 @@ export class MainController{
   apiRequester: ApiRequester;
   dbReader: DBReader;
   
-  static async init(): Promise<MainController>{
-    let instance = new MainController();
-    instance.apiRequester = await ApiRequester.init();
-    
-    instance.dbReader = new DBReader();
-    await instance.dbReader.establishDBConnectionV5("C:\\My Projects\\LoLStatsEF\\my_games_match_v5.db");
-    await instance.dbReader.createTablesV5();
-    await instance.dbReader.createRepositories();
-  
-    return instance;
+  async initDBReader(dbFilePath: string){
+    this.dbReader = new DBReader();
+    await this.dbReader.establishDBConnectionV5(dbFilePath);
+    await this.dbReader.createTablesV5();
+    await this.dbReader.createRepositories();
+  }
+
+  async initApiRequester(apiKey: string): Promise<boolean>{
+    this.apiRequester = new ApiRequester();
+    return await this.apiRequester.init(apiKey);
   }
 
   async writeTwoTestMatchesInDBAndCompareResultAgainstApi(){
@@ -54,45 +54,7 @@ export class MainController{
 
   async temp(){
 
-    // let allDbMatches = await this.dbReader.getAllMatches();
-    // allDbMatches.forEach(match => console.log(match.info.teams[0].bans));
-
-    // let match4 = await this.apiRequester.getMatchById('EUW1_5550468970')
-    // await this.dbReader.writeMatch(DBMatch.CreateFromApi(match4));
-    // console.log('done');
-    // return;
-
-    
-    return;
-
-    let match1 = await this.apiRequester.getMatchById('EUW1_5009413640')
-    let match2 = await this.apiRequester.getMatchById('EUW1_5009349489')
-    let match3 = await this.apiRequester.getMatchById('EUW1_5010757538')
-    await this.dbReader.writeMatch(DBMatch.CreateFromApi(match1));
-    await this.dbReader.writeMatch(DBMatch.CreateFromApi(match2));
-    await this.dbReader.writeMatch(DBMatch.CreateFromApi(match3));
-
-    let writtenMatch1 = await this.dbReader.getMatchByGameId(5009413640);
-    let writtenMatch2 = await this.dbReader.getMatchByGameId(5009349489);
-    let writtenMatch3 = await this.dbReader.getMatchByGameId(5010757538);
-
-    let res1 = writtenMatch1.compareAgainstApiMatch(match1);
-    let res2 = writtenMatch2.compareAgainstApiMatch(match2);
-    let res3 = writtenMatch3.compareAgainstApiMatch(match3);
-
-    console.log(res1, res2, res3);
-
-    let allDbMatches = await this.dbReader.getAllMatches();
-    allDbMatches.forEach(match => console.log(match.info.teams[0].bans));
-
-    console.log(match1.info.teams[0].bans);
-    console.log(match2.info.teams[0].bans);
-    console.log(match3.info.teams[0].bans);
-
-    return;
-    let latestCreationTimestamp = await this.dbReader.getLatestMatchCreation();
-    //should print Sat, 02 Jan 2021 21:27:56 GMT
-    console.log("latest match creation timestamp", new Date(latestCreationTimestamp).toUTCString());
+   
   }
 
   async printAllMatchesCreatinInConsole(){
@@ -112,6 +74,8 @@ export class MainController{
     let latestMatchCreation = await this.dbReader.getLatestMatchCreation();
     if(latestMatchCreation == -1)
       console.log('latestMatchCreation was -1 -> DB is empty');
+    else
+      console.log('latestMatchCreation is', new Date(latestMatchCreation).toUTCString());
 
     let start = 0;
     let matchIds = [];
@@ -126,6 +90,7 @@ export class MainController{
         if(matchDTO.info.gameCreation == latestMatchCreation){
           console.log('found latest match at index', start + matchIds.indexOf(matchId));
           foundIndex = start + matchIds.indexOf(matchId);
+          break;
         }else if(foundIndex == undefined){
           console.log('match',start + matchIds.indexOf(matchId) , matchId, 'creation', matchDTO.info.gameCreation, '!=', latestMatchCreation);
           matchDTOsToSave.push(matchDTO);
@@ -134,6 +99,12 @@ export class MainController{
 
       start += matchIds.length; 
     }while(foundIndex == undefined && matchIds.length != 0)
+
+    if(foundIndex == 0){
+      console.log('no new matches');
+      console.log('done');
+      return;
+    }
 
     console.log('----------------------------------');
     console.log('again, found latest match at index', foundIndex);
@@ -152,7 +123,7 @@ export class MainController{
     console.log('----------------------------------');
     console.log('saving matches now...');
     console.log('----------------------------------');
-
+return;
     let successfulWrittenMatches = 0;
     for(let matchDTO of matchDTOsToSave){
       let writtenMatch = await this.dbReader.writeMatch(DBMatch.CreateFromApi(matchDTO))

@@ -7,13 +7,13 @@ import { RiotRegion } from "galeforce/dist/riot-api";
 export class ApiRequester{
 
   private galeforce: GaleforceModule;
-  private account: SummonerDTO;
+  account: SummonerDTO;
 
-  static async init(): Promise<ApiRequester> {
-    let instance = new ApiRequester();
-    instance.galeforce = new GaleforceModule({
+  async init(apiKey): Promise<boolean> {
+    this.galeforce = new GaleforceModule({
       'riot-api': {
-        key: 'RGAPI-f5c6b673-01f7-47de-89ab-3a4fad7275f7',
+        //key: 'RGAPI-b3fba36c-54f5-4788-a158-71c47bd6e0a3',
+        key: apiKey,
       },
       'rate-limit': {
         type: 'bottleneck',
@@ -29,10 +29,13 @@ export class ApiRequester{
     });
 
     //my puuid: 8KF6_NTmY0iDJaesoSAhkKOw8ylDc9yWi7_zggXCfI3ZRQYqWDNoCCwTVeVyQgVIdNRyx-RBBg12xQ
-    instance.account = await instance.galeforce.lol.summoner().region(instance.galeforce.region.lol.EUROPE_WEST).name("hemmoleg").exec();
-    console.log(instance.account);
-
-    return instance;
+    try{
+      this.account = await this.galeforce.lol.summoner().region(this.galeforce.region.lol.EUROPE_WEST).name("hemmoleg").exec();
+      console.log(this.account);
+      return true;
+    }catch(e){
+      return false;
+    }
   }
 
   async getMatchById(matchId: string): Promise<MatchDTO> {
