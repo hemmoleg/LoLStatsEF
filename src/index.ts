@@ -101,23 +101,20 @@ const init = async () =>
 {
     createWindow();
 
-    
     // let dbReaderGamesNew = new DBReader();
     let mainController = new MainController();
     ipcMain.answerRenderer('initDBReader', async (filePath:string) => {await mainController.initDBReader(filePath); return 0;})
-    ipcMain.answerRenderer('initApiRequester', async (apiKey: string) => { let res = await mainController.initApiRequester(apiKey);
-      if(res){
-        ipcMain.answerRenderer("getNumWins", async () => await mainController.dbReader.getNumWins(mainController.apiRequester.account.puuid));
-        ipcMain.answerRenderer("getNumLoses", async () => await mainController.dbReader.getNumLoses(mainController.apiRequester.account.puuid));
-      }
-      return res;
-    });
+    ipcMain.answerRenderer('initApiRequester', async (apiKey: string) => await mainController.initApiRequester(apiKey));
+    ipcMain.answerRenderer('getMyPUUID', () => mainController.apiRequester.myPuuid);
+    ipcMain.answerRenderer("getNumWins", async () => await mainController.dbReader.getNumWins(mainController.apiRequester.myPuuid));
+    ipcMain.answerRenderer("getNumLoses", async () => await mainController.dbReader.getNumLoses(mainController.apiRequester.myPuuid));
     ipcMain.answerRenderer("getNumMatches", async () => await mainController.dbReader.getNumMatches());
     ipcMain.answerRenderer("getMostRecentGameTimestamp", async () =>  await mainController.dbReader.getLatestMatchCreation());
-    ipcMain.answerRenderer("updateDB", (apiKey: string) => {
-      
-    });
-
+    ipcMain.answerRenderer("updateDBPart1", async () => {await mainController.updateDBPart1()});
+    ipcMain.answerRenderer("updateDBPart2", async () => {await mainController.updateDBPart2()});
+    ipcMain.answerRenderer("updateDBPart3", async () => {await mainController.updateDBPart3()});
+    ipcMain.answerRenderer("getAllMatchIDs", async () => await mainController.dbReader.getAllMatchIDs());
+    ipcMain.answerRenderer("getMatchByID", async (id:number) => await mainController.dbReader.getMatchByGameId(id));
 };
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

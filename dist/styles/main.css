@@ -1,3 +1,22 @@
 span {
   color: burlywood;
+  font-family: arial;
+}
+span {
+  margin-right: 0.5rem;
+}
+select {
+  margin-right: 0.5rem;
+}
+#console {
+  bottom: 0px;
+  width: calc(100% - 54px);
+  height: 25vh;
+  background-color: darkgrey;
+  padding: 8px;
+  overflow-y: scroll;
+}
+#console span {
+  display: block;
+  color: #77dd77;
 }

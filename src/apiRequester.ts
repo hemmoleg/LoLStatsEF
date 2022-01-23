@@ -8,6 +8,7 @@ export class ApiRequester{
 
   private galeforce: GaleforceModule;
   account: SummonerDTO;
+  myPuuid = '8KF6_NTmY0iDJaesoSAhkKOw8ylDc9yWi7_zggXCfI3ZRQYqWDNoCCwTVeVyQgVIdNRyx-RBBg12xQ';
 
   async init(apiKey): Promise<boolean> {
     this.galeforce = new GaleforceModule({

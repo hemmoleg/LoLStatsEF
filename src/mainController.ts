@@ -1,14 +1,24 @@
+import { BrowserWindow } from "electron";
+import { ipcMain } from "electron-better-ipc";
 import { MatchDTO } from "galeforce/dist/galeforce/interfaces/dto";
 import { ApiRequester } from "./apiRequester";
 import { DBReader } from "./dbReader";
 import { DBMatch } from "./entitiesV5/DBMatch";
 
+const electron  = require('electron');
 
 export class MainController{
   apiRequester: ApiRequester;
   dbReader: DBReader;
-  
+
+  //values to updateDB
+  latestMatchCreation: number;
+  matchDTOsToSave: MatchDTO[];
+
   async initDBReader(dbFilePath: string){
+    if(this.dbReader)
+      return;
+
     this.dbReader = new DBReader();
     await this.dbReader.establishDBConnectionV5(dbFilePath);
     await this.dbReader.createTablesV5();
@@ -70,72 +80,86 @@ export class MainController{
     console.log("done");
   }
 
-  async updateDB(){
-    let latestMatchCreation = await this.dbReader.getLatestMatchCreation();
-    if(latestMatchCreation == -1)
-      console.log('latestMatchCreation was -1 -> DB is empty');
+  async updateDBPart1(){
+    this.printInRendererConsole('updatingDB...');
+    this.latestMatchCreation = await this.dbReader.getLatestMatchCreation();
+    if(this.latestMatchCreation == -1)
+      this.printInRendererConsole('latestMatchCreation was -1 -> DB is empty');
     else
-      console.log('latestMatchCreation is', new Date(latestMatchCreation).toUTCString());
+      this.printInRendererConsole('latestMatchCreation is', new Date(this.latestMatchCreation).toUTCString());
+  }
 
+  async updateDBPart2(){
     let start = 0;
     let matchIds = [];
     let foundIndex = undefined;
-    let matchDTOsToSave: Array<MatchDTO> = [];
-    
+    this.matchDTOsToSave = [];
+
     do{
       matchIds = await this.apiRequester.getTwentyMatchesFromStartIndex(start);
 
       for(let matchId of matchIds){
         let matchDTO = await this.apiRequester.getMatchById(matchId);
-        if(matchDTO.info.gameCreation == latestMatchCreation){
-          console.log('found latest match at index', start + matchIds.indexOf(matchId));
+        if(matchDTO.info.gameCreation == this.latestMatchCreation){
+          this.printInRendererConsole('found latest match at index', start + matchIds.indexOf(matchId));
           foundIndex = start + matchIds.indexOf(matchId);
           break;
         }else if(foundIndex == undefined){
-          console.log('match',start + matchIds.indexOf(matchId) , matchId, 'creation', matchDTO.info.gameCreation, '!=', latestMatchCreation);
-          matchDTOsToSave.push(matchDTO);
+          this.printInRendererConsole('match', start + matchIds.indexOf(matchId), matchId, 'creation', matchDTO.info.gameCreation, '!=', this.latestMatchCreation);
+          this.matchDTOsToSave.push(matchDTO);
         }
       }
 
       start += matchIds.length; 
+      console.log(start);
     }while(foundIndex == undefined && matchIds.length != 0)
 
     if(foundIndex == 0){
-      console.log('no new matches');
-      console.log('done');
+      this.printInRendererConsole('no new matches');
+      this.printInRendererConsole('done');
       return;
     }
 
-    console.log('----------------------------------');
-    console.log('again, found latest match at index', foundIndex);
-    console.log('unfiltered matchtes to save', matchDTOsToSave.length);
-    console.log('----------------------------------');
+    this.printInRendererConsole('----------------------------------');
+    this.printInRendererConsole('found latest match at index', foundIndex);
+    this.printInRendererConsole('unfiltered matchtes to save', this.matchDTOsToSave.length);
 
     //400 '5v5 draft pick' 420 '5v5 ranked solo' 430 '5v5 blind pick' 440 '5v5 ranked flex'
-    matchDTOsToSave = matchDTOsToSave.filter(matchDTO => 
+    this.matchDTOsToSave = this.matchDTOsToSave.filter(matchDTO => 
       matchDTO.info.queueId == 400 
       || matchDTO.info.queueId == 420
       || matchDTO.info.queueId == 430
       || matchDTO.info.queueId == 440
     )
-    console.log('filtered matchtes (by queueId) to save', matchDTOsToSave.length);
+    this.printInRendererConsole('filtered matchtes (by queueId) to save', this.matchDTOsToSave.length);
+    this.printInRendererConsole('saving matches now...');
+    this.printInRendererConsole('----------------------------------');
+  }
 
-    console.log('----------------------------------');
-    console.log('saving matches now...');
-    console.log('----------------------------------');
-return;
+  async updateDBPart3(){
     let successfulWrittenMatches = 0;
-    for(let matchDTO of matchDTOsToSave){
+    for(let matchDTO of this.matchDTOsToSave){
       let writtenMatch = await this.dbReader.writeMatch(DBMatch.CreateFromApi(matchDTO))
       if(!writtenMatch.compareAgainstApiMatch(matchDTO)){
-        console.log('match', matchDTOsToSave.indexOf(matchDTO), matchDTO.info.gameId, 'did not match written match!');
+        this.printInRendererConsole('match', this.matchDTOsToSave.indexOf(matchDTO), matchDTO.info.gameId, 'did not match written match!');
       }else{
-        console.log('match', matchDTOsToSave.indexOf(matchDTO), matchDTO.info.gameId, 'saved');
+        this.printInRendererConsole('match', this.matchDTOsToSave.indexOf(matchDTO), matchDTO.info.gameId, 'saved');
         successfulWrittenMatches++;
       }
     }
 
-    console.log('updated DB, matchtes to save', matchDTOsToSave.length, 'successfully saved', successfulWrittenMatches);
-    console.log('done');
+    this.printInRendererConsole('updated DB, matches to save', this.matchDTOsToSave.length, 'successfully saved', successfulWrittenMatches);
+    this.printInRendererConsole('done');
+  }
+
+  printInRendererConsole(msg?: string, ...optParams: Array<string | number>){
+    if(optParams){
+      optParams.forEach(param => msg = msg + ' ' + param);
+    }
+
+    if(electron.BrowserWindow.getFocusedWindow())
+      ipcMain.callFocusedRenderer('clg', msg);
+    else
+      console.log('no focused window -> msg printed here:', msg);
   }
 }

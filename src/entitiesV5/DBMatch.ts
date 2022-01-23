@@ -510,7 +510,7 @@ export class DBParticipant {
   @Column("integer", { name: "wardsPlaced"})
   wardsPlaced: number;
 
-  @Column("integer", { name: "win"})
+  @Column("boolean", { name: "win"})
   win: boolean;
 
   //public static CreateFromApi(matchDTO: MatchDTO): DBParticipant[] {

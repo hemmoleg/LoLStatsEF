@@ -1,0 +1,10 @@
+span {
+  color: burlywood;
+  font-family: arial;
+}
+div:first-of-type {
+  margin-bottom: 1rem;
+}
+span {
+  margin-right: 0.5rem;
+}

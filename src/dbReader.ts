@@ -120,6 +120,14 @@ export class DBReader
       return match;
     }
 
+    async getAllMatchIDs(): Promise<any[]>{
+      let x = await this.InfoRepository.createQueryBuilder()
+        .select('gameId')
+        .getRawMany();
+  
+      return x;
+    }
+
     async getAllMatches(): Promise<DBMatch[]> {
       // return await this.MatchRepositoryV5
       //   .createQueryBuilder('match')
@@ -128,7 +136,12 @@ export class DBReader
       //   .leftJoinAndSelect('match.metadata', 'metadata')
       //   .getMany();
 
-      return await this.MatchRepositoryV5.find();
+      //WARNING: this crashes the code
+
+console.log('dbreader trying to get all matches...');
+      let x = await this.MatchRepositoryV5.find();
+      console.log('dbreader trying to get all matches... done');
+      return x;
     }
 
     async getAllInfos(): Promise<DBInfo[]> {

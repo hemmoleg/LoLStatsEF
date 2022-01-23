@@ -1,0 +1,25 @@
+span {
+  color: burlywood;
+  font-family: arial;
+}
+span {
+  display: inline-block;
+  padding-right: 0.5rem;
+  width: 1rem;
+}
+span.gameCreation {
+  width: 8rem;
+}
+span.championName {
+  width: 4.5rem;
+}
+span.win {
+  color: green;
+}
+span.lose {
+  color: red;
+}
+span.win,
+span.lose {
+  width: 3rem;
+}
