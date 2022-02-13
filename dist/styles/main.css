@@ -20,3 +20,11 @@ select {
   display: block;
   color: #77dd77;
 }
+#containerMatches {
+  display: inline-block;
+  width: 50%;
+}
+championAverages {
+  display: inline-block;
+  vertical-align: top;
+}

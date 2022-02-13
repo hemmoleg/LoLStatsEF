@@ -103,19 +103,21 @@ export class DBReader
         return a.participantId - b.participantId;
       });
 
+      //commented bc eager loading of perks is disabled
       //fix random sorting of selections
-      match.info.participants.forEach(p => p.perks.styles.forEach(s => {
-        s.selections = s.selections.sort(function(a, b) {
-          return a.id - b.id;
-        });
-      }));
+      // match.info.participants.forEach(p => p.perks.styles.forEach(s => {
+      //   s.selections = s.selections.sort(function(a, b) {
+      //     return a.id - b.id;
+      //   });
+      // }));
 
+      //commented bc eager loading of bans is disabled
       //fix random sorting of bans
-      match.info.teams.forEach(t => 
-        t.bans = t.bans.sort(function(a, b){
-          return a.id - b.id;
-        })
-      );
+      // match.info.teams.forEach(t => 
+      //   t.bans = t.bans.sort(function(a, b){
+      //     return a.id - b.id;
+      //   })
+      // );
 
       return match;
     }
@@ -138,7 +140,7 @@ export class DBReader
 
       //WARNING: this crashes the code
 
-console.log('dbreader trying to get all matches...');
+      console.log('dbreader trying to get all matches...');
       let x = await this.MatchRepositoryV5.find();
       console.log('dbreader trying to get all matches... done');
       return x;

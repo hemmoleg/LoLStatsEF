@@ -124,7 +124,7 @@ export class MainController{
     this.printInRendererConsole('found latest match at index', foundIndex);
     this.printInRendererConsole('unfiltered matchtes to save', this.matchDTOsToSave.length);
 
-    //400 '5v5 draft pick' 420 '5v5 ranked solo' 430 '5v5 blind pick' 440 '5v5 ranked flex'
+    //400-'5v5 draft pick' 430-'5v5 blind pick' 420-'5v5 ranked solo' 440-'5v5 ranked flex'
     this.matchDTOsToSave = this.matchDTOsToSave.filter(matchDTO => 
       matchDTO.info.queueId == 400 
       || matchDTO.info.queueId == 420

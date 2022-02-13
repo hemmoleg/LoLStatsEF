@@ -26,7 +26,9 @@ export class AverageComponent implements OnInit
   calcAverages(matches?: DBMatch[]){
     if(matches)
       this.matches = matches;
-    
+    if(this.matches == undefined)
+      return;
+
     console.log("calcAverages", this.matches.length);
 
     this.wins = 0;

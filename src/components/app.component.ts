@@ -9,11 +9,18 @@ import localeDe from '@angular/common/locales/de';
 import { DBMatch } from "../entitiesV5/DBMatch";
 import { MatchComponent } from "./match.component";
 import { AverageComponent } from "./average.component";
+import { ChampionAveragesComponent } from "./championAverages.component";
 
 
 // const browserWindow = require('electron').remote.BrowserWindow;
 const appVersion = require('electron').remote.app.getVersion(); 
 const storage = require('electron-json-storage');
+
+enum MatchType{
+  all = "all",
+  normal = "normal",
+  ranked = "ranked"
+}
 
 @Component({
     selector: "App",
@@ -34,8 +41,13 @@ const storage = require('electron-json-storage');
       </div>
 
       <span>show last</span> 
-      <select [ngModel]="matchesToShow" (ngModelChange)="onChangeMatchesToShow($event)">
+      <select [ngModel]="matchesToShow" (ngModelChange)="onChangeDDMatchAmountToShow($event)">
         <option *ngFor="let matchesToShowOption of matchesToShowOptions" [value]="matchesToShowOption">{{matchesToShowOption}}</option>
+      </select>
+      <span>matches</span>
+      <span>filter</span>
+      <select [ngModel]="matchTypeToShow" (ngModelChange)="onChangeDDMatchTypeToShow($event)">
+        <option *ngFor="let matcheType of matchTypes" [value]="matcheType">{{matcheType}}</option>
       </select>
       <span>matches</span>
 
@@ -44,14 +56,29 @@ const storage = require('electron-json-storage');
         [matches]=currentMatches>
       </average>
 
-      <match *ngFor="let match of currentMatches" 
+      <div id="containerMatches">
+        <match *ngFor="let match of currentMatches" 
+          [myPuuid]=myPuuid
+          [Match]=match>
+        </match>
+      </div>
+
+      <championAverages #championAverages 
         [myPuuid]=myPuuid
-        [Match]=match>
-      </match>
+        [matches]=currentMatches>
+      </championAverages>
     `
 })
 export class AppComponent implements OnInit, AfterViewInit
 {
+    public MatchType = MatchType;
+    public matchTypes = Object.keys(MatchType);
+    static MatchTypeIDs: Map<MatchType, Array<number>> = new Map([
+      [MatchType.all, [400, 430, 420, 440]],
+      [MatchType.normal, [400, 430]],
+      [MatchType.ranked, [420, 440]]
+    ])
+
     myPuuid = '';
     numMatches = 0;
     numWins = 0;
@@ -59,17 +86,20 @@ export class AppComponent implements OnInit, AfterViewInit
     mostRecentMatchTimestamp = 0;
 
     matchesToShow;
+    matchTypeToShow;
     matchesToShowOptions = [];
     allMatchIDs: any[];
     currentMatchIDs: any[];
+    loadedMatches: DBMatch[];
     currentMatches: DBMatch[];
 
     msgs: string[] = [];
 
-    apiKey: string = 'RGAPI-a0c513d5-42fe-4ce5-acc4-2225e577a57b';
+    apiKey: string = 'RGAPI-b2e4e01c-9263-445b-aae4-defb98ecbd33';
     apiRequesterWorking = false;
 
     @ViewChild('average') averageComponent:AverageComponent;
+    @ViewChild('championAverages') championAveragesComponent:ChampionAveragesComponent;
 
     ngOnInit(): void {
       console.log("LolStatsEF", appVersion);
@@ -105,22 +135,31 @@ export class AppComponent implements OnInit, AfterViewInit
       this.allMatchIDs = await ipcRenderer.callMain("getAllMatchIDs");
       this.printToConsole('gotAllMatchIDs', this.allMatchIDs.length);
 
-      this.getAllMatches();
+      await this.getLastTenMatches();
+      this.updateGUI();
     }
 
-    async getAllMatches(){
-      this.currentMatches = [];
-      this.allMatchIDs = this.allMatchIDs.reverse();
-      this.currentMatchIDs = this.allMatchIDs.slice(0, 10);
-      await this.showMatches(this.currentMatchIDs);
+    updateGUI(){
+      this.filterLoadedMatchesByType();
+      this.averageComponent.calcAverages(this.currentMatches);
+      this.championAveragesComponent.calcAverages(this.currentMatches);
+    }
 
-      this.averageComponent.calcAverages();
+    async getLastTenMatches(){
+      this.loadedMatches = [];
+      this.allMatchIDs = this.allMatchIDs.reverse();
+      this.currentMatchIDs = this.allMatchIDs.slice(0, 20);
+      await this.getDBMatches(this.currentMatchIDs);
+
       this.printToConsole('getting all matches done');
 
       this.matchesToShowOptions = [...Array(this.allMatchIDs.length).keys()].filter(i => i % 5 == 0);
       this.matchesToShowOptions.shift(); // remove 0
       this.matchesToShowOptions.push(this.allMatchIDs.length) // add current lenght as option
-      this.matchesToShow = this.currentMatches.length;
+      this.matchesToShow = this.loadedMatches.length;
+
+      this.matchTypeToShow = MatchType.all;
+      this.currentMatches = this.loadedMatches;
     }
 
     async initApiRequester(){
@@ -135,30 +174,46 @@ export class AppComponent implements OnInit, AfterViewInit
       this.msgs.push(msg);
     }
 
-    async showMatches(matchIDs: any[]){
+    async getDBMatches(matchIDs: any[]){
       await matchIDs.reduce(async (memo, id) => {
         await memo;
         this.printToConsole('getting match by gameID', id.gameId);
         let match: DBMatch = await ipcRenderer.callMain("getMatchByID", id.gameId);
         this.printToConsole('getting match done', match.id);
-        this.currentMatches.push(match);
+        this.loadedMatches.push(match);
       }, undefined);
     }
 
-    async onChangeMatchesToShow(newValue: number){
-      if(newValue < this.currentMatches.length){
-        this.currentMatches = this.currentMatches.slice(0, -newValue);
-        this.currentMatchIDs = this.currentMatchIDs.slice(0, -newValue);
+    async onChangeDDMatchAmountToShow(newValue: number){
+      if(newValue < this.loadedMatches.length){
+        this.loadedMatches = this.loadedMatches.slice(0, newValue);
+        console.log('this.loadedMatches.length', this.loadedMatches.length);
+        this.currentMatchIDs = this.currentMatchIDs.slice(0, newValue);
       } else {
-        let matchesToAdd = newValue - this.currentMatches.length;
-        let newIDs = this.allMatchIDs.slice(this.currentMatches.length, this.currentMatches.length + matchesToAdd);
+        let matchesToAdd = newValue - this.loadedMatches.length;
+        let newIDs = this.allMatchIDs.slice(this.loadedMatches.length, this.loadedMatches.length + matchesToAdd);
         this.currentMatchIDs.push(...newIDs);
         
-        await this.showMatches(newIDs);
+        await this.getDBMatches(newIDs);
       }
-      console.log("onChangesMatchesToShow curerntMatches.length", this.currentMatches.length);
-      this.averageComponent.calcAverages(this.currentMatches);
+      console.log("onChangesMatchesToShow loadedMatches.length", this.loadedMatches.length);
+      
+      this.updateGUI()
     }
+
+    async onChangeDDMatchTypeToShow(newValue: MatchType){
+      console.log(newValue);
+      this.matchTypeToShow = newValue;
+      this.updateGUI();
+    }
+
+    filterLoadedMatchesByType(){
+      this.currentMatches = this.loadedMatches.filter(dbMatch => {
+        return AppComponent.MatchTypeIDs.get(this.matchTypeToShow).includes(dbMatch.info.queueId); 
+      })
+      console.log('filtered matches', this.currentMatches);
+    }
+    
 
   async compareDBs(){
     // await ipcRenderer.callMain("establishDBConnection2", "C:\\My Projects\\LoLStats\\games_new.db");
@@ -200,7 +255,7 @@ export class AppComponent implements OnInit, AfterViewInit
 @NgModule({
     imports: [BrowserModule, FormsModule],
     providers: [{ provide: LOCALE_ID, useValue: "de-DE" }],    
-    declarations: [AppComponent, MatchComponent, AverageComponent],
+    declarations: [AppComponent, MatchComponent, AverageComponent, ChampionAveragesComponent],
     bootstrap: [AppComponent]
 })
 export class AppModule { }

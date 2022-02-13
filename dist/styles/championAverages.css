@@ -1,0 +1,39 @@
+span {
+  color: burlywood;
+  font-family: arial;
+}
+span {
+  display: inline-block;
+  padding-right: 0.5rem;
+  width: 1.7rem;
+}
+span.championName {
+  width: 5.5rem;
+}
+span.gameCountText {
+  width: 1rem;
+  white-space: nowrap;
+}
+span.gameCount {
+  width: 1rem;
+}
+span.winPercent {
+  width: 3rem;
+  text-align: right;
+}
+span.damageDealtToChmapionsPerDeath {
+  width: 3rem;
+}
+.angle {
+  transform-origin: 0%;
+  transform: translateX(1rem) rotate(-45deg);
+}
+.angle.gameCountText {
+  transform-origin: 0%;
+  transform: rotate(-45deg);
+}
+#devider {
+  width: 100%;
+  border-bottom: 1px solid wheat;
+  margin: 0.2rem 0;
+}

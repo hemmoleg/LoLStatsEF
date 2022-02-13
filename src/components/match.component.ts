@@ -13,6 +13,7 @@ import { DBMatch, DBParticipant } from "../entitiesV5/DBMatch";
       <span>{{myParticipant.kills}}</span>
       <span>{{myParticipant.deaths}}</span>
       <span>{{myParticipant.assists}}</span>
+      <span>{{match.info.gameDuration * 1000 | date:'mm:ss'}}</span>
     </div>
   `
 })

@@ -362,7 +362,7 @@ export class DBParticipant {
   @Column("integer", { name: "pentaKills"})
   pentaKills: number;
 
-  @OneToOne(() => DBPerks, {cascade: true, eager: true})
+  @OneToOne(() => DBPerks, {cascade: true, eager: false})
   @JoinColumn()
   perks: DBPerks;
 
@@ -1024,7 +1024,7 @@ export class DBInfo {
   queueId: number;
 
   // @OneToMany(() => DBTeam, "", {cascade: true})
-  @OneToMany(() => DBTeam, (team) => team.dummyFieldForManyToOne, {cascade: true, eager: true})
+  @OneToMany(() => DBTeam, (team) => team.dummyFieldForManyToOne, {cascade: true, eager: false})
   teams: DBTeam[];
 
   @Column("varchar", { name: "tournamentCode", nullable: true,})
@@ -1086,11 +1086,11 @@ export class DBMatch {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => DBMetadata, {cascade: true, eager: true})
+  @OneToOne(() => DBMetadata, {cascade: true, eager: false})
   @JoinColumn()
   metadata: DBMetadata;
 
-  @OneToOne(() => DBInfo, {cascade: true, eager: true})
+  @OneToOne(() => DBInfo, {cascade: true, eager: false})
   @JoinColumn()
   info: DBInfo;
 
