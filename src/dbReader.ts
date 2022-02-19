@@ -103,6 +103,12 @@ export class DBReader
         return a.participantId - b.participantId;
       });
 
+      //fix gameDuration (was in milliseconds before patch 11.20 and seconds after 11.20)
+      //patch was deployed on 5th october 2021
+      //if game was befoer that duration is in ms so convert it to s
+      if(match.info.gameCreation < 1633474800000)
+        match.info.gameDuration = match.info.gameDuration / 1000;
+
       //commented bc eager loading of perks is disabled
       //fix random sorting of selections
       // match.info.participants.forEach(p => p.perks.styles.forEach(s => {

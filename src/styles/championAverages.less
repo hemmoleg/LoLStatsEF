@@ -12,6 +12,10 @@ span{
   &.gameCountText{
     width: 1rem;
     white-space: nowrap;
+  
+    &.myTeam{
+      white-space: wrap;
+    }
   }
 
   &.gameCount{
@@ -31,6 +35,10 @@ span{
 &.angle{
   transform-origin: 0%;
   transform: translateX(1rem) rotate(-45deg);
+
+  &.winPercent{
+    text-align: left;
+  }
 
   &.gameCountText{
     transform-origin: 0%;

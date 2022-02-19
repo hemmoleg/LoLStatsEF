@@ -14,6 +14,9 @@ span.gameCountText {
   width: 1rem;
   white-space: nowrap;
 }
+span.gameCountText.myTeam {
+  white-space: wrap;
+}
 span.gameCount {
   width: 1rem;
 }
@@ -27,6 +30,9 @@ span.damageDealtToChmapionsPerDeath {
 .angle {
   transform-origin: 0%;
   transform: translateX(1rem) rotate(-45deg);
+}
+.angle.winPercent {
+  text-align: left;
 }
 .angle.gameCountText {
   transform-origin: 0%;

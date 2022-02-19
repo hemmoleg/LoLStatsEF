@@ -9,7 +9,8 @@ import localeDe from '@angular/common/locales/de';
 import { DBMatch } from "../entitiesV5/DBMatch";
 import { MatchComponent } from "./match.component";
 import { AverageComponent } from "./average.component";
-import { ChampionAveragesComponent } from "./championAverages.component";
+import { MyChampionAveragesComponent } from "./myChampionAverages.component";
+import { OtherChampionAveragesComponent } from "./otherChampionAverages.component";
 
 
 // const browserWindow = require('electron').remote.BrowserWindow;
@@ -63,10 +64,17 @@ enum MatchType{
         </match>
       </div>
 
-      <championAverages #championAverages 
-        [myPuuid]=myPuuid
-        [matches]=currentMatches>
-      </championAverages>
+      <div id='test'>
+        <myChampionAverages #myChampionAverages 
+          [myPuuid]=myPuuid
+          [matches]=currentMatches>
+        </myChampionAverages>
+
+        <otherChampionAverages #otherChampionAverages 
+          [myPuuid]=myPuuid
+          [matches]=currentMatches>
+        </otherChampionAverages>
+      </div>
     `
 })
 export class AppComponent implements OnInit, AfterViewInit
@@ -95,11 +103,12 @@ export class AppComponent implements OnInit, AfterViewInit
 
     msgs: string[] = [];
 
-    apiKey: string = 'RGAPI-b2e4e01c-9263-445b-aae4-defb98ecbd33';
+    apiKey: string = 'RGAPI-47d26421-ae66-45fe-8939-c70172ec3512';
     apiRequesterWorking = false;
 
     @ViewChild('average') averageComponent:AverageComponent;
-    @ViewChild('championAverages') championAveragesComponent:ChampionAveragesComponent;
+    @ViewChild('myChampionAverages') myChampionAveragesComponent:MyChampionAveragesComponent;
+    @ViewChild('otherChampionAverages') otherChampionAveragesComponent:OtherChampionAveragesComponent;
 
     ngOnInit(): void {
       console.log("LolStatsEF", appVersion);
@@ -142,7 +151,8 @@ export class AppComponent implements OnInit, AfterViewInit
     updateGUI(){
       this.filterLoadedMatchesByType();
       this.averageComponent.calcAverages(this.currentMatches);
-      this.championAveragesComponent.calcAverages(this.currentMatches);
+      this.myChampionAveragesComponent.calcAverages(this.currentMatches);
+      this.otherChampionAveragesComponent.calcAverages(this.currentMatches);
     }
 
     async getLastTenMatches(){
@@ -255,7 +265,8 @@ export class AppComponent implements OnInit, AfterViewInit
 @NgModule({
     imports: [BrowserModule, FormsModule],
     providers: [{ provide: LOCALE_ID, useValue: "de-DE" }],    
-    declarations: [AppComponent, MatchComponent, AverageComponent, ChampionAveragesComponent],
+    declarations: [AppComponent, MatchComponent, AverageComponent, MyChampionAveragesComponent,
+      OtherChampionAveragesComponent],
     bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -3,7 +3,9 @@ import { DBInfo, DBMatch, DBParticipant } from "../entitiesV5/DBMatch";
 
 export class ParticipantAndInfo{
   constructor(public p: DBParticipant, 
-    public i: DBInfo){}
+    public i: DBInfo,){}
+
+  public onMyTeam: boolean
 }
 
 export class ChampionAverage{
@@ -18,7 +20,7 @@ export class ChampionAverage{
 }
 
 @Component({
-  selector: "championAverages",
+  selector: "myChampionAverages",
   styleUrls: ['./../dist/styles/championAverages.css'],
   template: `
     <span class="championName"></span>
@@ -57,7 +59,7 @@ export class ChampionAverage{
     
     `
 })
-export class ChampionAveragesComponent implements OnInit
+export class MyChampionAveragesComponent implements OnInit
 {
   @Input() matches: DBMatch[];
   @Input() myPuuid: '';
