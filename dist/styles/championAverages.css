@@ -7,6 +7,10 @@ span {
   padding-right: 0.5rem;
   width: 1.7rem;
 }
+span.lblSortBy {
+  width: unset;
+  padding-bottom: 4.5rem;
+}
 span.championName {
   width: 5.5rem;
 }
@@ -18,25 +22,37 @@ span.gameCountText.myTeam {
   white-space: wrap;
 }
 span.gameCount {
-  width: 1rem;
+  width: 1.2rem;
+  text-align: right;
 }
 span.winPercent {
   width: 3rem;
   text-align: right;
+}
+span.kda,
+span.kills,
+span.deaths,
+span.assissts {
+  text-align: right;
+}
+span.kills,
+span.deaths,
+span.assissts {
+  width: 1.9rem;
 }
 span.damageDealtToChmapionsPerDeath {
   width: 3rem;
 }
 .angle {
   transform-origin: 0%;
-  transform: translateX(1rem) rotate(-45deg);
+  transform: translateX(1.8rem) rotate(-45deg);
 }
 .angle.winPercent {
   text-align: left;
 }
 .angle.gameCountText {
   transform-origin: 0%;
-  transform: rotate(-45deg);
+  transform: translateX(1rem) rotate(-45deg);
 }
 #devider {
   width: 100%;
