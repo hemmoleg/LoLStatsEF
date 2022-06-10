@@ -5,16 +5,9 @@ import { DBReader } from "./dbReader";
 import { WindowStateKeeper } from "./windowStateKeeper";
 import { ipcMain } from "electron-better-ipc";
 
-import GaleforceModule = require("galeforce");
-import { RiotRegion } from "galeforce/dist/riot-api";
-import { CreatePayloadProxy, Payload } from "galeforce/dist/galeforce/actions/payload";
-import { DBMatch } from "./entitiesV5/DBMatch";
-import { ApiRequester } from "./apiRequester";
 import { MainController } from "./mainController";
 
 const ipc = require("electron-better-ipc");
-
-//const GaleforceModule = require('galeforce');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
