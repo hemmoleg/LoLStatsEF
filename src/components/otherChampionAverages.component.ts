@@ -100,6 +100,7 @@ export class OtherChampionAveragesComponent
   othersStats = true;
   	
 
+  //TODO add total stats (gameCount, Winrate)
   //TODO use this component for myStats as well as for othersStats
   //TODO implement same sorting as here in myChampionAverages
   //TODO check most played with/against players
