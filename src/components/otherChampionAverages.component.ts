@@ -1,6 +1,23 @@
 import { Component, Input, OnInit } from "@angular/core";
 import { DBInfo, DBMatch, DBParticipant } from "../entitiesV5/DBMatch";
-import { ChampionAverage, ParticipantAndInfo } from "./myChampionAverages.component";
+
+export class ParticipantAndInfo{
+  constructor(public p: DBParticipant, 
+    public i: DBInfo,){}
+
+  public onMyTeam: boolean
+}
+
+export class ChampionAverage{
+  winPercent: number = 0;
+  gameCount: number = 0;
+  kills: number = 0;
+  deaths: number = 0;
+  assists: number = 0;
+  kda: number = 0;
+  damageDealtToChampionsPerDeath: number = 0;
+  duration: number = 0;
+}
 export class OtherChampionAverage extends ChampionAverage{
   winPercentOnMyTeam: number;
   gameCountOnMyTeam: number = 0;
@@ -39,10 +56,10 @@ enum SortBy{
     <span class="championName"></span>
     <span class="angle gameCountText"># of Games</span>
     <span class="angle winPercent">WR</span>
-    <span class="angle gameCountText"># of Games¹</span>
-    <span class="angle winPercent">WR¹</span>
-    <span class="angle gameCountText"># of Games²</span>
-    <span class="angle winPercent">WR²</span>
+    <span *ngIf="othersStats" class="angle gameCountText"># of Games¹</span>
+    <span *ngIf="othersStats" class="angle winPercent">WR¹</span>
+    <span *ngIf="othersStats"class="angle gameCountText"># of Games²</span>
+    <span *ngIf="othersStats"class="angle winPercent">WR²</span>
     <span class="angle">KDA</span>
     <span class="angle">Kills</span>
     <span class="angle">Deaths</span>
@@ -54,24 +71,29 @@ enum SortBy{
     <div id="container" *ngFor="let entry of championAverages">
       <div class="otherChampionAverage">
         <span class="championName">{{entry.name}}</span>
-        <span class="gameCount">{{entry.gameCount}}</span>
-        <span *ngIf='isNaN(entry.winPercent); else elseSpan3' class="winPercent">
-          --%
-        </span>
-        <ng-template #elseSpan3>
-          <span class="winPercent">
-            {{entry.winPercent | number: '1.0-1'}}%
+        <span *ngIf="othersStats" class="gameCount">{{entry.gameCount}}</span>
+        <span *ngIf="othersStats" class="winPercent">
+          <span *ngIf='isNaN(entry.winPercent); else elseSpan3'>
+            --%
           </span>
-        </ng-template>
-        <span class="gameCount">{{entry.gameCountOnEnemyTeam}}</span>
-        <span *ngIf='isNaN(entry.winPercentOnEnemyTeam); else elseSpan1' class="winPercent">
-          --%
+          <ng-template #elseSpan3>
+            <span>
+              {{entry.winPercent | number: '1.0-1'}}%
+            </span>
+          </ng-template>
         </span>
-        <ng-template #elseSpan1>
-          <span class="winPercent">
-            {{entry.winPercentOnEnemyTeam | number: '1.0-1'}}%
+
+        <span *ngIf="othersStats" class="gameCount">{{entry.gameCountOnEnemyTeam}}</span>
+        <span *ngIf="othersStats" class="winPercent">
+          <span *ngIf='isNaN(entry.winPercentOnEnemyTeam); else elseSpan1'>
+            --%
           </span>
-        </ng-template>
+          <ng-template #elseSpan1>
+            <span>
+              {{entry.winPercentOnEnemyTeam | number: '1.0-1'}}%
+            </span>
+          </ng-template>
+        </span>
         <span class="gameCount">{{entry.gameCountOnMyTeam}}</span>
         <span *ngIf='isNaN(entry.winPercentOnMyTeam); else elseSpan2' class="winPercent">
           --%
@@ -93,10 +115,10 @@ enum SortBy{
     <!-- bottom line -->
     <div id='devider'></div>
     <span class="championName">Overall</span>
-    <span class="gameCount">{{allChampsAverage.gameCount}}</span>
-    <span class="winPercent">{{allChampsAverage.winPercent | number: '1.0-1'}}%</span>
-    <span class="gameCount">{{allChampsAverage.gameCountOnEnemyTeam}}</span>
-    <span class="winPercent">{{allChampsAverage.winPercentOnEnemyTeam | number: '1.0-1'}}%</span>
+    <span *ngIf="othersStats" class="gameCount">{{allChampsAverage.gameCount}}</span>
+    <span *ngIf="othersStats" class="winPercent">{{allChampsAverage.winPercent | number: '1.0-1'}}%</span>
+    <span *ngIf="othersStats" class="gameCount">{{allChampsAverage.gameCountOnEnemyTeam}}</span>
+    <span *ngIf="othersStats" class="winPercent">{{allChampsAverage.winPercentOnEnemyTeam | number: '1.0-1'}}%</span>
     <span class="gameCount">{{allChampsAverage.gameCountOnMyTeam}}</span>
     <span class="winPercent">{{allChampsAverage.winPercentOnMyTeam | number: '1.0-1'}}%</span>
     <span class="kda">{{allChampsAverage.kda | number: '1.0-1'}}</span>
@@ -105,8 +127,8 @@ enum SortBy{
     <span class="assissts">{{allChampsAverage.assists | number: '1.0-1'}}</span>
     <span class="damageDealtToChmapionsPerDeath">{{allChampsAverage.damageDealtToChampionsPerDeath | number: '1.0-0'}}</span>
     <span class="duration">{{allChampsAverage.duration * 1000 | date:'mm:ss' }}</span>
-    <span style="display: block; width: 8rem">¹ on enemy team</span>
-    <span style="display: block; width: 8rem">² on my team</span>
+    <span *ngIf="othersStats" style="display: block; width: 8rem">¹ on enemy team</span>
+    <span *ngIf="othersStats" style="display: block; width: 8rem">² on my team</span>
     
     `
 })
@@ -114,13 +136,9 @@ export class OtherChampionAveragesComponent
 {
   @Input() matches: DBMatch[];
   @Input() myPuuid: '';
+  @Input() othersStats = true;
 
-  othersStats = true;
-  	
-
-  //TODO add total stats (gameCount, Winrate)
-  //TODO use this component for myStats as well as for othersStats
-  //TODO implement same sorting as here in myChampionAverages
+  //TODO rename all occurences of 'averages' to 'stats'
   //TODO check most played with/against players
   //TODO color lines with only one or two games gray background
   //TODO update stats after db was updated
@@ -342,7 +360,6 @@ export class OtherChampionAveragesComponent
       this.allChampsAverage.deaths += deaths;
       this.allChampsAverage.assists += assists;
       this.allChampsAverage.damageDealtToChampionsPerDeath += damageDealtToChampions;
-      this.allChampsAverage.gameCountOnMyTeam += (winsOnMyTeam + losesOnMyTeam);
       this.allChampsAverage.duration += duration;
     })
 
@@ -352,12 +369,11 @@ export class OtherChampionAveragesComponent
     this.allChampsAverage.deaths = this.allChampsAverage.deaths / this.allChampsAverage.gameCount;
     this.allChampsAverage.assists = this.allChampsAverage.assists / this.allChampsAverage.gameCount;
     this.allChampsAverage.kda = (this.allChampsAverage.kills + this.allChampsAverage.assists) / this.allChampsAverage.deaths;
-    //this.allChampsAverage.winPercent = (totalWins/(this.allChampsAverage.gameCount)) * 100;
+    this.allChampsAverage.winPercent = ((totalWinsOnEnemyTeam + totalWinsOnMyTeam)/(this.allChampsAverage.gameCount)) * 100;
+    this.allChampsAverage.winPercentOnEnemyTeam = (totalWinsOnEnemyTeam/(this.allChampsAverage.gameCountOnEnemyTeam)) * 100;
     this.allChampsAverage.winPercentOnMyTeam = (totalWinsOnMyTeam/(this.allChampsAverage.gameCountOnMyTeam)) * 100;
     this.allChampsAverage.duration = this.allChampsAverage.duration / this.allChampsAverage.gameCount;
   
-    console.log(this.allChampsAverage.winPercentOnMyTeam, this.allChampsAverage.gameCountOnMyTeam);
-
     mapChampionAverages.forEach((value, key) => {
       value.name = key;
       this.championAverages.push(value);

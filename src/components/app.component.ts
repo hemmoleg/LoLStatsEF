@@ -9,7 +9,6 @@ import localeDe from '@angular/common/locales/de';
 import { DBMatch } from "../entitiesV5/DBMatch";
 import { MatchComponent } from "./match.component";
 import { AverageComponent } from "./average.component";
-import { MyChampionAveragesComponent } from "./myChampionAverages.component";
 import { OtherChampionAveragesComponent } from "./otherChampionAverages.component";
 
 
@@ -65,14 +64,16 @@ enum MatchType{
       </div>
 
       <div id='test'>
-        <myChampionAverages #myChampionAverages 
+        <otherChampionAverages #myChampionAverages 
           [myPuuid]=myPuuid
-          [matches]=currentMatches>
-        </myChampionAverages>
+          [matches]=currentMatches
+          [othersStats]=false>
+        </otherChampionAverages>
 
         <otherChampionAverages #otherChampionAverages 
           [myPuuid]=myPuuid
-          [matches]=currentMatches>
+          [matches]=currentMatches
+          [othersStats]=true>
         </otherChampionAverages>
       </div>
     `
@@ -107,7 +108,7 @@ export class AppComponent implements OnInit, AfterViewInit
     apiRequesterWorking = false;
 
     @ViewChild('average') averageComponent:AverageComponent;
-    @ViewChild('myChampionAverages') myChampionAveragesComponent:MyChampionAveragesComponent;
+    @ViewChild('myChampionAverages') myChampionAveragesComponent:OtherChampionAveragesComponent;
     @ViewChild('otherChampionAverages') otherChampionAveragesComponent:OtherChampionAveragesComponent;
 
     ngOnInit(): void {
@@ -265,7 +266,7 @@ export class AppComponent implements OnInit, AfterViewInit
 @NgModule({
     imports: [BrowserModule, FormsModule],
     providers: [{ provide: LOCALE_ID, useValue: "de-DE" }],    
-    declarations: [AppComponent, MatchComponent, AverageComponent, MyChampionAveragesComponent,
+    declarations: [AppComponent, MatchComponent, AverageComponent,
       OtherChampionAveragesComponent],
     bootstrap: [AppComponent]
 })

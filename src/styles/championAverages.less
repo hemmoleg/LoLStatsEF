@@ -12,6 +12,9 @@
     &>span{
       color:aliceblue;
     }
+    &>span>span{
+      color:aliceblue;
+    }
   }
 }
 
@@ -46,6 +49,11 @@ span{
   &.winPercent{
     width: 3rem;
     text-align: right;
+
+    &>span{
+      width: 3rem;
+      text-align: right;
+    }
   }
 
   &.kda, &.kills, &.deaths, &.assissts{
@@ -58,6 +66,7 @@ span{
 
   &.damageDealtToChmapionsPerDeath{
     width: 3rem;
+    text-align: right;
   }
 
   &.duration{

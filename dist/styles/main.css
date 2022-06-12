@@ -28,11 +28,15 @@ select {
   display: inline-block;
   vertical-align: top;
 }
-myChampionAverages,
+
 otherChampionAverages {
   display: block;
   vertical-align: top;
 }
+otherChampionAverages:first-child {
+  margin-top: unset;
+}
+
 otherChampionAverages {
   margin-top: 4.5rem;
 }

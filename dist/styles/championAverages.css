@@ -14,6 +14,9 @@ span {
 .otherChampionAverage:hover > span {
   color: aliceblue;
 }
+.otherChampionAverage:hover > span > span {
+  color: aliceblue;
+}
 span {
   display: inline-block;
   padding-right: 0.5rem;
@@ -41,6 +44,10 @@ span.winPercent {
   width: 3rem;
   text-align: right;
 }
+span.winPercent > span {
+  width: 3rem;
+  text-align: right;
+}
 span.kda,
 span.kills,
 span.deaths,
@@ -54,6 +61,7 @@ span.assissts {
 }
 span.damageDealtToChmapionsPerDeath {
   width: 3rem;
+  text-align: right;
 }
 span.duration {
   width: 2rem;
