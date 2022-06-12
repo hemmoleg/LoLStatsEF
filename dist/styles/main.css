@@ -22,7 +22,7 @@ select {
 }
 #containerMatches {
   display: inline-block;
-  width: 50%;
+  width: 40%;
 }
 #test {
   display: inline-block;

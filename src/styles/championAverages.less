@@ -1,5 +1,20 @@
 @import "./base.less";
 
+.otherChampionAverage{
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+
+  &:hover{
+    background: lightslategray;
+    cursor: default;
+    font-weight: 700;
+    
+    &>span{
+      color:aliceblue;
+    }
+  }
+}
+
 span{
   display: inline-block;
   padding-right: 0.5rem;
@@ -43,6 +58,10 @@ span{
 
   &.damageDealtToChmapionsPerDeath{
     width: 3rem;
+  }
+
+  &.duration{
+    width: 2rem;
   }
 }
 

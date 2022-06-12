@@ -2,6 +2,18 @@ span {
   color: burlywood;
   font-family: arial;
 }
+.otherChampionAverage {
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+}
+.otherChampionAverage:hover {
+  background: lightslategray;
+  cursor: default;
+  font-weight: 700;
+}
+.otherChampionAverage:hover > span {
+  color: aliceblue;
+}
 span {
   display: inline-block;
   padding-right: 0.5rem;
@@ -42,6 +54,9 @@ span.assissts {
 }
 span.damageDealtToChmapionsPerDeath {
   width: 3rem;
+}
+span.duration {
+  width: 2rem;
 }
 .angle {
   transform-origin: 0%;

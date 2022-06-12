@@ -11,6 +11,8 @@ export class OtherChampionAverage extends ChampionAverage{
 
 enum SortBy{
   Name = 'Champion Name',
+  NumberOfGames = 'Number of Games',
+  Winrate = 'Winrate',
   NumberOfGamesOnEnemyTeam = 'Number of Games on Enemy Team',
   WinrateOnEnemyTeam = 'Winrate on Enemy Team',
   NumberOfGamesOnMyTeam = 'Number of Games on my Team',
@@ -37,8 +39,10 @@ enum SortBy{
     <span class="championName"></span>
     <span class="angle gameCountText"># of Games</span>
     <span class="angle winPercent">WR</span>
-    <span class="angle gameCountText"># of Games *</span>
-    <span class="angle winPercent">WR *</span>
+    <span class="angle gameCountText"># of Games¹</span>
+    <span class="angle winPercent">WR¹</span>
+    <span class="angle gameCountText"># of Games²</span>
+    <span class="angle winPercent">WR²</span>
     <span class="angle">KDA</span>
     <span class="angle">Kills</span>
     <span class="angle">Deaths</span>
@@ -48,37 +52,50 @@ enum SortBy{
     
     <!-- table body -->
     <div id="container" *ngFor="let entry of championAverages">
-      <span class="championName">{{entry.name}}</span>
-      <span class="gameCount">{{entry.gameCountOnEnemyTeam}}</span>
-      <span *ngIf='isNaN(entry.winPercentOnEnemyTeam); else elseSpan1' class="winPercent">
-        --%
-      </span>
-      <ng-template #elseSpan1>
-        <span class="winPercent">
-          {{entry.winPercentOnEnemyTeam | number: '1.0-1'}}%
+      <div class="otherChampionAverage">
+        <span class="championName">{{entry.name}}</span>
+        <span class="gameCount">{{entry.gameCount}}</span>
+        <span *ngIf='isNaN(entry.winPercent); else elseSpan3' class="winPercent">
+          --%
         </span>
-      </ng-template>
-      <span class="gameCount">{{entry.gameCountOnMyTeam}}</span>
-      <span *ngIf='isNaN(entry.winPercentOnMyTeam); else elseSpan2' class="winPercent">
-        --%
-      </span>
-      <ng-template #elseSpan2>
-        <span class="winPercent">
-          {{entry.winPercentOnMyTeam | number: '1.0-1'}}%
+        <ng-template #elseSpan3>
+          <span class="winPercent">
+            {{entry.winPercent | number: '1.0-1'}}%
+          </span>
+        </ng-template>
+        <span class="gameCount">{{entry.gameCountOnEnemyTeam}}</span>
+        <span *ngIf='isNaN(entry.winPercentOnEnemyTeam); else elseSpan1' class="winPercent">
+          --%
         </span>
-      </ng-template>
-      <span class="kda">{{entry.kda | number: '1.0-1'}}</span>
-      <span class="kills">{{entry.kills | number: '1.0-1'}}</span>
-      <span class="deaths">{{entry.deaths | number: '1.0-1'}}</span>
-      <span class="assissts">{{entry.assists | number: '1.0-1'}}</span>
-      <span class="damageDealtToChmapionsPerDeath">{{entry.damageDealtToChampionsPerDeath | number: '1.0-0'}}</span>
-      <span>{{entry.duration * 1000 | date:'mm:ss' }}</span>
+        <ng-template #elseSpan1>
+          <span class="winPercent">
+            {{entry.winPercentOnEnemyTeam | number: '1.0-1'}}%
+          </span>
+        </ng-template>
+        <span class="gameCount">{{entry.gameCountOnMyTeam}}</span>
+        <span *ngIf='isNaN(entry.winPercentOnMyTeam); else elseSpan2' class="winPercent">
+          --%
+        </span>
+        <ng-template #elseSpan2>
+          <span class="winPercent">
+            {{entry.winPercentOnMyTeam | number: '1.0-1'}}%
+          </span>
+        </ng-template>
+        <span class="kda">{{entry.kda | number: '1.0-1'}}</span>
+        <span class="kills">{{entry.kills | number: '1.0-1'}}</span>
+        <span class="deaths">{{entry.deaths | number: '1.0-1'}}</span>
+        <span class="assissts">{{entry.assists | number: '1.0-1'}}</span>
+        <span class="damageDealtToChmapionsPerDeath">{{entry.damageDealtToChampionsPerDeath | number: '1.0-0'}}</span>
+        <span class="duration">{{entry.duration * 1000 | date:'mm:ss' }}</span>
+      </div>
     </div>
     
     <!-- bottom line -->
     <div id='devider'></div>
     <span class="championName">Overall</span>
     <span class="gameCount">{{allChampsAverage.gameCount}}</span>
+    <span class="winPercent">{{allChampsAverage.winPercent | number: '1.0-1'}}%</span>
+    <span class="gameCount">{{allChampsAverage.gameCountOnEnemyTeam}}</span>
     <span class="winPercent">{{allChampsAverage.winPercentOnEnemyTeam | number: '1.0-1'}}%</span>
     <span class="gameCount">{{allChampsAverage.gameCountOnMyTeam}}</span>
     <span class="winPercent">{{allChampsAverage.winPercentOnMyTeam | number: '1.0-1'}}%</span>
@@ -87,8 +104,9 @@ enum SortBy{
     <span class="deaths">{{allChampsAverage.deaths | number: '1.0-1'}}</span>
     <span class="assissts">{{allChampsAverage.assists | number: '1.0-1'}}</span>
     <span class="damageDealtToChmapionsPerDeath">{{allChampsAverage.damageDealtToChampionsPerDeath | number: '1.0-0'}}</span>
-    <span>{{allChampsAverage.duration * 1000 | date:'mm:ss' }}</span>
-    <span style="display: block; width: 8rem">* on my team</span>
+    <span class="duration">{{allChampsAverage.duration * 1000 | date:'mm:ss' }}</span>
+    <span style="display: block; width: 8rem">¹ on enemy team</span>
+    <span style="display: block; width: 8rem">² on my team</span>
     
     `
 })
@@ -106,6 +124,7 @@ export class OtherChampionAveragesComponent
   //TODO check most played with/against players
   //TODO color lines with only one or two games gray background
   //TODO update stats after db was updated
+  //TODO find out how to debug this in vs code
 
   myParticipantsAndInfos = new Map<string, Array<ParticipantAndInfo>>();
   championAverages = new Array();
@@ -128,6 +147,24 @@ export class OtherChampionAveragesComponent
           });
         break;
       
+      case SortBy.NumberOfGames:
+        this.championAverages.sort((a,b) => {
+            return b.gameCount - a.gameCount;
+          });
+        break;
+      
+      case SortBy.Winrate:
+        this.championAverages.sort((a,b) => {
+          if(this.isNaN(a.winPercent)){
+            return 1;
+          }
+          if(this.isNaN(b.winPercent)){
+            return -1;
+          }
+          return b.winPercent - a.winPercent;
+        });
+        break;
+
       case SortBy.NumberOfGamesOnEnemyTeam:
         this.championAverages.sort((a,b) => {
             return b.gameCountOnEnemyTeam - a.gameCountOnEnemyTeam;
@@ -283,7 +320,7 @@ export class OtherChampionAveragesComponent
       championAverage.assists = assists / value.length;
       championAverage.kda = deaths > 0 ? (kills + assists) / deaths : 0;
       championAverage.damageDealtToChampionsPerDeath = deaths > 0 ? damageDealtToChampions / deaths : 0;
-      //championAverage.gameCount = value.length;
+      championAverage.gameCount = value.length;
       championAverage.duration = duration / value.length;
 
       championAverage.gameCountOnMyTeam = gameCountOnMyTeam;
@@ -298,13 +335,13 @@ export class OtherChampionAveragesComponent
       mapChampionAverages.set(key, championAverage);
     
       //update allChampsAverages
-      this.allChampsAverage.gameCount += championAverage.gameCountOnEnemyTeam;
+      this.allChampsAverage.gameCount += value.length;
+      this.allChampsAverage.gameCountOnEnemyTeam += championAverage.gameCountOnEnemyTeam;
       this.allChampsAverage.gameCountOnMyTeam += championAverage.gameCountOnMyTeam;
       this.allChampsAverage.kills += kills;
       this.allChampsAverage.deaths += deaths;
       this.allChampsAverage.assists += assists;
       this.allChampsAverage.damageDealtToChampionsPerDeath += damageDealtToChampions;
-      this.allChampsAverage.gameCount += value.length;
       this.allChampsAverage.gameCountOnMyTeam += (winsOnMyTeam + losesOnMyTeam);
       this.allChampsAverage.duration += duration;
     })
