@@ -2,19 +2,19 @@ span {
   color: burlywood;
   font-family: arial;
 }
-.otherChampionAverage {
+.otherChampionStats {
   padding-top: 0.1rem;
   padding-bottom: 0.1rem;
 }
-.otherChampionAverage:hover {
+.otherChampionStats:hover {
   background: lightslategray;
   cursor: default;
   font-weight: 700;
 }
-.otherChampionAverage:hover > span {
+.otherChampionStats:hover > span {
   color: aliceblue;
 }
-.otherChampionAverage:hover > span > span {
+.otherChampionStats:hover > span > span {
   color: aliceblue;
 }
 span {

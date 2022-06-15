@@ -2,8 +2,8 @@ import { Component, Input, OnInit } from "@angular/core";
 import { DBMatch, DBParticipant } from "../entitiesV5/DBMatch";
 
 @Component({
-  selector: "average",
-  styleUrls: ['./../dist/styles/average.css'],
+  selector: "winrate",
+  styleUrls: ['./../dist/styles/winrate.css'],
   template: `
     <div>
       <span>wins {{wins}}</span>
@@ -12,7 +12,7 @@ import { DBMatch, DBParticipant } from "../entitiesV5/DBMatch";
     </div>
   `
 })
-export class AverageComponent implements OnInit
+export class WinrateComponent implements OnInit
 {
   @Input() matches: DBMatch[];
   @Input() myPuuid: '';
@@ -23,13 +23,13 @@ export class AverageComponent implements OnInit
   loses = 0;
   winrate = 0;
 
-  calcAverages(matches?: DBMatch[]){
+  calcWinrate(matches?: DBMatch[]){
     if(matches)
       this.matches = matches;
     if(this.matches == undefined)
       return;
 
-    console.log("calcAverages", this.matches.length);
+    console.log("calcWinrate", this.matches.length);
 
     this.wins = 0;
     this.loses = 0;

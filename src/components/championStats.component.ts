@@ -8,7 +8,7 @@ export class ParticipantAndInfo{
   public onMyTeam: boolean
 }
 
-export class ChampionAverage{
+export class ChampionStats{
   winPercent: number = 0;
   gameCount: number = 0;
   kills: number = 0;
@@ -18,7 +18,7 @@ export class ChampionAverage{
   damageDealtToChampionsPerDeath: number = 0;
   duration: number = 0;
 }
-export class OtherChampionAverage extends ChampionAverage{
+export class OtherChampionStats extends ChampionStats{
   winPercentOnMyTeam: number;
   gameCountOnMyTeam: number = 0;
   winPercentOnEnemyTeam: number = 0;
@@ -43,8 +43,8 @@ enum SortBy{
 }
 
 @Component({
-  selector: "otherChampionAverages",
-  styleUrls: ['./../dist/styles/championAverages.css'],
+  selector: "championStats",
+  styleUrls: ['./../dist/styles/championStats.css'],
   template: `
     <span class="lblSortBy">Sort by</span> 
     <select [ngModel]="sortByValue" (ngModelChange)="onChangeDDSortBy($event)">
@@ -68,8 +68,8 @@ enum SortBy{
     <span class="angle">Duration</span>
     
     <!-- table body -->
-    <div id="container" *ngFor="let entry of championAverages">
-      <div class="otherChampionAverage">
+    <div id="container" *ngFor="let entry of championStats">
+      <div class="otherChampionStats">
         <span class="championName">{{entry.name}}</span>
         <span *ngIf="othersStats" class="gameCount">{{entry.gameCount}}</span>
         <span *ngIf="othersStats" class="winPercent">
@@ -115,24 +115,24 @@ enum SortBy{
     <!-- bottom line -->
     <div id='devider'></div>
     <span class="championName">Overall</span>
-    <span *ngIf="othersStats" class="gameCount">{{allChampsAverage.gameCount}}</span>
-    <span *ngIf="othersStats" class="winPercent">{{allChampsAverage.winPercent | number: '1.0-1'}}%</span>
-    <span *ngIf="othersStats" class="gameCount">{{allChampsAverage.gameCountOnEnemyTeam}}</span>
-    <span *ngIf="othersStats" class="winPercent">{{allChampsAverage.winPercentOnEnemyTeam | number: '1.0-1'}}%</span>
-    <span class="gameCount">{{allChampsAverage.gameCountOnMyTeam}}</span>
-    <span class="winPercent">{{allChampsAverage.winPercentOnMyTeam | number: '1.0-1'}}%</span>
-    <span class="kda">{{allChampsAverage.kda | number: '1.0-1'}}</span>
-    <span class="kills">{{allChampsAverage.kills | number: '1.0-1'}}</span>
-    <span class="deaths">{{allChampsAverage.deaths | number: '1.0-1'}}</span>
-    <span class="assissts">{{allChampsAverage.assists | number: '1.0-1'}}</span>
-    <span class="damageDealtToChmapionsPerDeath">{{allChampsAverage.damageDealtToChampionsPerDeath | number: '1.0-0'}}</span>
-    <span class="duration">{{allChampsAverage.duration * 1000 | date:'mm:ss' }}</span>
+    <span *ngIf="othersStats" class="gameCount">{{allChampsStats.gameCount}}</span>
+    <span *ngIf="othersStats" class="winPercent">{{allChampsStats.winPercent | number: '1.0-1'}}%</span>
+    <span *ngIf="othersStats" class="gameCount">{{allChampsStats.gameCountOnEnemyTeam}}</span>
+    <span *ngIf="othersStats" class="winPercent">{{allChampsStats.winPercentOnEnemyTeam | number: '1.0-1'}}%</span>
+    <span class="gameCount">{{allChampsStats.gameCountOnMyTeam}}</span>
+    <span class="winPercent">{{allChampsStats.winPercentOnMyTeam | number: '1.0-1'}}%</span>
+    <span class="kda">{{allChampsStats.kda | number: '1.0-1'}}</span>
+    <span class="kills">{{allChampsStats.kills | number: '1.0-1'}}</span>
+    <span class="deaths">{{allChampsStats.deaths | number: '1.0-1'}}</span>
+    <span class="assissts">{{allChampsStats.assists | number: '1.0-1'}}</span>
+    <span class="damageDealtToChmapionsPerDeath">{{allChampsStats.damageDealtToChampionsPerDeath | number: '1.0-0'}}</span>
+    <span class="duration">{{allChampsStats.duration * 1000 | date:'mm:ss' }}</span>
     <span *ngIf="othersStats" style="display: block; width: 8rem">¹ on enemy team</span>
     <span *ngIf="othersStats" style="display: block; width: 8rem">² on my team</span>
     
     `
 })
-export class OtherChampionAveragesComponent
+export class ChampionStatsComponent
 {
   @Input() matches: DBMatch[];
   @Input() myPuuid: '';
@@ -145,8 +145,8 @@ export class OtherChampionAveragesComponent
   //TODO find out how to debug this in vs code
 
   myParticipantsAndInfos = new Map<string, Array<ParticipantAndInfo>>();
-  championAverages = new Array();
-  allChampsAverage = new OtherChampionAverage();
+  championStats = new Array();
+  allChampsStats = new OtherChampionStats();
 
   SortBy = SortBy;
   sortBy = Object.values(SortBy);
@@ -154,7 +154,7 @@ export class OtherChampionAveragesComponent
   onChangeDDSortBy(value: SortBy){
     switch(value){
       case SortBy.Name:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
             if(a.name < b.name){
               return -1;
             }
@@ -166,13 +166,13 @@ export class OtherChampionAveragesComponent
         break;
       
       case SortBy.NumberOfGames:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
             return b.gameCount - a.gameCount;
           });
         break;
       
       case SortBy.Winrate:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
           if(this.isNaN(a.winPercent)){
             return 1;
           }
@@ -184,13 +184,13 @@ export class OtherChampionAveragesComponent
         break;
 
       case SortBy.NumberOfGamesOnEnemyTeam:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
             return b.gameCountOnEnemyTeam - a.gameCountOnEnemyTeam;
           });
         break;
       
       case SortBy.WinrateOnEnemyTeam:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
           if(this.isNaN(a.winPercentOnEnemyTeam)){
             return 1;
           }
@@ -202,13 +202,13 @@ export class OtherChampionAveragesComponent
         break;
 
       case SortBy.NumberOfGamesOnMyTeam:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
             return b.gameCountOnMyTeam - a.gameCountOnMyTeam;
           });
         break;
 
       case SortBy.WinrateOnMyTeam:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
           if(this.isNaN(a.winPercentOnMyTeam)){
             return 1;
           }
@@ -220,55 +220,55 @@ export class OtherChampionAveragesComponent
         break;
 
       case SortBy.KDA:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
             return b.kda - a.kda;
           });
         break;
 
       case SortBy.Kills:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
             return b.kills - a.kills;
           });
         break;
 
       case SortBy.Deaths:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
             return b.deaths - a.deaths;
           });
         break;
 
       case SortBy.Assists:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
             return b.assists - a.assists;
           });
         break;
 
       case SortBy.DMGPerDeath:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
             return b.damageDealtToChampionsPerDeath - a.damageDealtToChampionsPerDeath;
           });
         break;
 
       case SortBy.Duration:
-        this.championAverages.sort((a,b) => {
+        this.championStats.sort((a,b) => {
             return b.duration - a.duration;
           });
         break;
     }
   }
 
-  calcAverages(matches?: DBMatch[]){
+  calcStats(matches?: DBMatch[]){
     if(matches)
       this.matches = matches;
     if(this.matches == undefined)
       return;
 
-    console.log("calcChampionAverages", this.matches.length);
+    console.log("calcchampionStats", this.matches.length);
 
     this.myParticipantsAndInfos.clear();
-    this.championAverages = [];
+    this.championStats = [];
 
-    let mapChampionAverages = new Map<string, OtherChampionAverage>();
+    let mapchampionStats = new Map<string, OtherChampionStats>();
 
     this.matches.forEach(match => {
       let myTeamId = match.info.participants.find( p => p.puuid == this.myPuuid).teamId;
@@ -295,7 +295,7 @@ export class OtherChampionAveragesComponent
       })
     })
 
-    this.allChampsAverage = new OtherChampionAverage();
+    this.allChampsStats = new OtherChampionStats();
     let totalWinsOnEnemyTeam = 0;
     let totalWinsOnMyTeam = 0;
 
@@ -331,52 +331,52 @@ export class OtherChampionAveragesComponent
       winsOnEnemyTeam = totalWins - winsOnMyTeam;
       losesOnEnemyTeam = totalLoses - losesOnMyTeam;
 
-      let championAverage = new OtherChampionAverage();
-      championAverage.winPercent = (totalWins/(totalWins + totalLoses)) * 100;
-      championAverage.kills = kills / value.length;
-      championAverage.deaths = deaths / value.length;
-      championAverage.assists = assists / value.length;
-      championAverage.kda = deaths > 0 ? (kills + assists) / deaths : 0;
-      championAverage.damageDealtToChampionsPerDeath = deaths > 0 ? damageDealtToChampions / deaths : 0;
-      championAverage.gameCount = value.length;
-      championAverage.duration = duration / value.length;
+      let championStats = new OtherChampionStats();
+      championStats.winPercent = (totalWins/(totalWins + totalLoses)) * 100;
+      championStats.kills = kills / value.length;
+      championStats.deaths = deaths / value.length;
+      championStats.assists = assists / value.length;
+      championStats.kda = deaths > 0 ? (kills + assists) / deaths : 0;
+      championStats.damageDealtToChampionsPerDeath = deaths > 0 ? damageDealtToChampions / deaths : 0;
+      championStats.gameCount = value.length;
+      championStats.duration = duration / value.length;
 
-      championAverage.gameCountOnMyTeam = gameCountOnMyTeam;
-      championAverage.gameCountOnEnemyTeam = gameCountOnEnemyTeam;
-      championAverage.winPercentOnMyTeam = (winsOnMyTeam/(winsOnMyTeam + losesOnMyTeam)) * 100;
-      championAverage.winPercentOnEnemyTeam = (winsOnEnemyTeam/(winsOnEnemyTeam + losesOnEnemyTeam)) * 100;
+      championStats.gameCountOnMyTeam = gameCountOnMyTeam;
+      championStats.gameCountOnEnemyTeam = gameCountOnEnemyTeam;
+      championStats.winPercentOnMyTeam = (winsOnMyTeam/(winsOnMyTeam + losesOnMyTeam)) * 100;
+      championStats.winPercentOnEnemyTeam = (winsOnEnemyTeam/(winsOnEnemyTeam + losesOnEnemyTeam)) * 100;
 
       if(winsOnEnemyTeam + losesOnEnemyTeam == 0){
-        console.log(championAverage.winPercentOnEnemyTeam);
+        console.log(championStats.winPercentOnEnemyTeam);
       }
 
-      mapChampionAverages.set(key, championAverage);
+      mapchampionStats.set(key, championStats);
     
-      //update allChampsAverages
-      this.allChampsAverage.gameCount += value.length;
-      this.allChampsAverage.gameCountOnEnemyTeam += championAverage.gameCountOnEnemyTeam;
-      this.allChampsAverage.gameCountOnMyTeam += championAverage.gameCountOnMyTeam;
-      this.allChampsAverage.kills += kills;
-      this.allChampsAverage.deaths += deaths;
-      this.allChampsAverage.assists += assists;
-      this.allChampsAverage.damageDealtToChampionsPerDeath += damageDealtToChampions;
-      this.allChampsAverage.duration += duration;
+      //update allChampsStatss
+      this.allChampsStats.gameCount += value.length;
+      this.allChampsStats.gameCountOnEnemyTeam += championStats.gameCountOnEnemyTeam;
+      this.allChampsStats.gameCountOnMyTeam += championStats.gameCountOnMyTeam;
+      this.allChampsStats.kills += kills;
+      this.allChampsStats.deaths += deaths;
+      this.allChampsStats.assists += assists;
+      this.allChampsStats.damageDealtToChampionsPerDeath += damageDealtToChampions;
+      this.allChampsStats.duration += duration;
     })
 
     //damageDealtToChampionsPerDeath needs to be calculated BEFORE calculating deaths
-    this.allChampsAverage.damageDealtToChampionsPerDeath = this.allChampsAverage.damageDealtToChampionsPerDeath / this.allChampsAverage.deaths;
-    this.allChampsAverage.kills = this.allChampsAverage.kills / this.allChampsAverage.gameCount;
-    this.allChampsAverage.deaths = this.allChampsAverage.deaths / this.allChampsAverage.gameCount;
-    this.allChampsAverage.assists = this.allChampsAverage.assists / this.allChampsAverage.gameCount;
-    this.allChampsAverage.kda = (this.allChampsAverage.kills + this.allChampsAverage.assists) / this.allChampsAverage.deaths;
-    this.allChampsAverage.winPercent = ((totalWinsOnEnemyTeam + totalWinsOnMyTeam)/(this.allChampsAverage.gameCount)) * 100;
-    this.allChampsAverage.winPercentOnEnemyTeam = (totalWinsOnEnemyTeam/(this.allChampsAverage.gameCountOnEnemyTeam)) * 100;
-    this.allChampsAverage.winPercentOnMyTeam = (totalWinsOnMyTeam/(this.allChampsAverage.gameCountOnMyTeam)) * 100;
-    this.allChampsAverage.duration = this.allChampsAverage.duration / this.allChampsAverage.gameCount;
+    this.allChampsStats.damageDealtToChampionsPerDeath = this.allChampsStats.damageDealtToChampionsPerDeath / this.allChampsStats.deaths;
+    this.allChampsStats.kills = this.allChampsStats.kills / this.allChampsStats.gameCount;
+    this.allChampsStats.deaths = this.allChampsStats.deaths / this.allChampsStats.gameCount;
+    this.allChampsStats.assists = this.allChampsStats.assists / this.allChampsStats.gameCount;
+    this.allChampsStats.kda = (this.allChampsStats.kills + this.allChampsStats.assists) / this.allChampsStats.deaths;
+    this.allChampsStats.winPercent = ((totalWinsOnEnemyTeam + totalWinsOnMyTeam)/(this.allChampsStats.gameCount)) * 100;
+    this.allChampsStats.winPercentOnEnemyTeam = (totalWinsOnEnemyTeam/(this.allChampsStats.gameCountOnEnemyTeam)) * 100;
+    this.allChampsStats.winPercentOnMyTeam = (totalWinsOnMyTeam/(this.allChampsStats.gameCountOnMyTeam)) * 100;
+    this.allChampsStats.duration = this.allChampsStats.duration / this.allChampsStats.gameCount;
   
-    mapChampionAverages.forEach((value, key) => {
+    mapchampionStats.forEach((value, key) => {
       value.name = key;
-      this.championAverages.push(value);
+      this.championStats.push(value);
     })
   }
 
