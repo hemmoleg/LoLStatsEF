@@ -33,7 +33,6 @@ championStats {
   vertical-align: top;
   margin-top: 4.5rem;
 }
-
 championStats:first-child {
   margin-top: unset;
 }

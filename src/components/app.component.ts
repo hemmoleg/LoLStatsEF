@@ -10,6 +10,7 @@ import { DBMatch } from "../entitiesV5/DBMatch";
 import { MatchComponent } from "./match.component";
 import { WinrateComponent } from "./winrate.component";
 import { ChampionStatsComponent } from "./championStats.component";
+import { SummonersComponent } from "./summoners.component";
 
 
 // const browserWindow = require('electron').remote.BrowserWindow;
@@ -75,6 +76,11 @@ enum MatchType{
           [matches]=currentMatches
           [othersStats]=true>
         </championStats>
+
+        <summoners #summoners
+          [myPuuid]=myPuuid
+          [matches]=currentMatches>
+        </summoners>
       </div>
     `
 })
@@ -110,6 +116,7 @@ export class AppComponent implements OnInit, AfterViewInit
     @ViewChild('winrate') winrateComponent:WinrateComponent;
     @ViewChild('myChampionStats') myChampionStatsComponent:ChampionStatsComponent;
     @ViewChild('otherChampionStats') otherChampionStatsComponent:ChampionStatsComponent;
+    @ViewChild('summoners') summonersComponent:SummonersComponent;
 
     ngOnInit(): void {
       console.log("LolStatsEF", appVersion);
@@ -154,6 +161,7 @@ export class AppComponent implements OnInit, AfterViewInit
       this.winrateComponent.calcWinrate(this.currentMatches);
       this.myChampionStatsComponent.calcStats(this.currentMatches);
       this.otherChampionStatsComponent.calcStats(this.currentMatches);
+      this.summonersComponent.calcStats(this.currentMatches);
     }
 
     async getLastTenMatches(){
@@ -267,7 +275,7 @@ export class AppComponent implements OnInit, AfterViewInit
     imports: [BrowserModule, FormsModule],
     providers: [{ provide: LOCALE_ID, useValue: "de-DE" }],    
     declarations: [AppComponent, MatchComponent, WinrateComponent,
-      ChampionStatsComponent],
+      ChampionStatsComponent, SummonersComponent],
     bootstrap: [AppComponent]
 })
 export class AppModule { }

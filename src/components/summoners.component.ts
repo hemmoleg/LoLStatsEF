@@ -1,30 +1,6 @@
 import { Component, Input, OnInit } from "@angular/core";
 import { DBInfo, DBMatch, DBParticipant } from "../entitiesV5/DBMatch";
-
-export class ParticipantAndInfo{
-  constructor(public p: DBParticipant, 
-    public i: DBInfo,){}
-
-  public onMyTeam: boolean
-}
-
-export class ChampionStats{
-  winPercent: number = 0;
-  gameCount: number = 0;
-  kills: number = 0;
-  deaths: number = 0;
-  assists: number = 0;
-  kda: number = 0;
-  damageDealtToChampionsPerDeath: number = 0;
-  duration: number = 0;
-}
-export class OtherChampionStats extends ChampionStats{
-  winPercentOnMyTeam: number;
-  gameCountOnMyTeam: number = 0;
-  winPercentOnEnemyTeam: number = 0;
-  gameCountOnEnemyTeam: number = 0;
-  name: string;
-}
+import { OtherChampionStats, ParticipantAndInfo } from "./championStats.component";
 
 enum SortBy{
   Name = 'Champion Name',
@@ -43,7 +19,7 @@ enum SortBy{
 }
 
 @Component({
-  selector: "championStats",
+  selector: "summoners",
   styleUrls: ['./../dist/styles/championStats.css'],
   template: `
     <span class="lblSortBy">Sort by</span> 
@@ -132,11 +108,16 @@ enum SortBy{
     
     `
 })
-export class ChampionStatsComponent
+export class SummonersComponent
 {
   @Input() matches: DBMatch[];
   @Input() myPuuid: '';
   @Input() othersStats = true;
+
+  //TODO check most played with/against players
+  //TODO color lines with only one or two games gray background
+  //TODO update stats after db was updated
+  //TODO find out how to debug this in vs code
 
   myParticipantsAndInfos = new Map<string, Array<ParticipantAndInfo>>();
   championStats = new Array();
@@ -281,13 +262,18 @@ export class ChampionStatsComponent
         
         let pAndI = new ParticipantAndInfo(p, match.info);
         pAndI.onMyTeam = p.teamId == myTeamId;
-        if(this.myParticipantsAndInfos.has(p.championName)){
-          this.myParticipantsAndInfos.get(p.championName).push(pAndI);
+        if(this.myParticipantsAndInfos.has(p.summonerName)){
+          this.myParticipantsAndInfos.get(p.summonerName).push(pAndI);
         } else {
-          this.myParticipantsAndInfos.set(p.championName, [pAndI]);
+          this.myParticipantsAndInfos.set(p.summonerName, [pAndI]);
         }
       })
     })
+
+    for (let k of this.myParticipantsAndInfos.keys()) {
+      if (this.myParticipantsAndInfos.get(k).length < 2)
+        this.myParticipantsAndInfos.delete(k);
+    }
 
     this.allChampsStats = new OtherChampionStats();
     let totalWinsOnEnemyTeam = 0;
