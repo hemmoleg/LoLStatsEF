@@ -100,8 +100,8 @@ export class AppComponent implements OnInit, AfterViewInit
     numLoses = 0;
     mostRecentMatchTimestamp = 0;
 
-    matchesToShow;
-    matchTypeToShow;
+    matchesToShow: DBMatch[];
+    matchTypeToShow: MatchType;
     matchesToShowOptions = [];
     allMatchIDs: any[];
     currentMatchIDs: any[];
@@ -127,7 +127,7 @@ export class AppComponent implements OnInit, AfterViewInit
 
     async ngAfterViewInit()
     {
-        await ipcRenderer.callMain("initDBReader", "C:\\My Projects\\LoLStatsEF\\my_games_match_v5.db");
+        await ipcRenderer.callMain("initDBReader", "./my_games_match_v5.db");
         this.apiRequesterWorking = await ipcRenderer.callMain("initApiRequester", this.apiKey);
         this.myPuuid = await ipcRenderer.callMain('getMyPUUID');
         this.updateData();
