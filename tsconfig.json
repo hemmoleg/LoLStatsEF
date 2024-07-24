@@ -3,7 +3,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "outDir": "./dist/out-tsc",
-    "module": "es2020",
+    "module": "CommonJS",
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",

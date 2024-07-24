@@ -270,9 +270,9 @@ export class SummonersComponent
       })
     })
 
-    for (let k of this.myParticipantsAndInfos.keys()) {
-      if (this.myParticipantsAndInfos.get(k).length < 2)
-        this.myParticipantsAndInfos.delete(k);
+    for (let key of this.myParticipantsAndInfos.keys()) {
+      if (this.myParticipantsAndInfos.get(key).length < 2)
+        this.myParticipantsAndInfos.delete(key);
     }
 
     this.allChampsStats = new OtherChampionStats();
@@ -358,6 +358,7 @@ export class SummonersComponent
       value.name = key;
       this.championStats.push(value);
     })
+
   }
 
   isNaN(value: number){

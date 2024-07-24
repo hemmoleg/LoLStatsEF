@@ -2,6 +2,11 @@ span {
   color: burlywood;
   font-family: arial;
 }
+#app-container {
+  margin: -8px;
+  padding: 8px;
+  background: #232324;
+}
 span {
   margin-right: 0.5rem;
 }

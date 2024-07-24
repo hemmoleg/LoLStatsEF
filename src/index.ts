@@ -17,9 +17,6 @@ const isDevMode = process.execPath.match(/[\\/]electron/);
 
 if (isDevMode) enableLiveReload();
 
-// global.window1 = null;
-// global.window2 = null;
-
 const createWindow = async () =>
 {
     // let splash = new BrowserWindow({
@@ -39,24 +36,22 @@ const createWindow = async () =>
     const savedStateMain = windowStateKeeperMain.getSavedState();
 
     const windowOptionsMain = { 
-        title: "SkypeTimelineAnalyzer",
+        title: "LoLStats",
         x: savedStateMain.x,
         y: savedStateMain.y,
         width: savedStateMain.width,
         height: savedStateMain.height,
         minWidth: 970,
         minHeight: 640,
-        frame: false,
         show: false
     };
 
    
 
-// splash.webContents.openDevTools();
-// return;
+    // splash.webContents.openDevTools();
+    // return;
     // Create the browser window
-   
-    mainWindow = new BrowserWindow(windowOptionsMain); 
+    mainWindow = new BrowserWindow(windowOptionsMain);
 
     //track window state
     windowStateKeeperMain.track(mainWindow);
@@ -70,11 +65,10 @@ const createWindow = async () =>
         mainWindow.webContents.openDevTools();
     }
 
-    console.log("argTest", process.argv[2]);
-
     mainWindow.on("ready-to-show", () =>
     {
         //splash.destroy();
+        mainWindow.setMenu(null);
         mainWindow.show();
         mainWindow.moveTop();
     })

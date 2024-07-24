@@ -47,7 +47,7 @@ enum SortBy{
   styleUrls: ['./../dist/styles/championStats.css'],
   template: `
     <span class="lblSortBy">Sort by</span> 
-    <select [ngModel]="sortByValue" (ngModelChange)="onChangeDDSortBy($event)">
+    <select (ngModelChange)="onChangeDDSortBy($event)">
       <option *ngFor="let option of sortBy" [value]="option">{{option}}</option>
     </select>
     <br>

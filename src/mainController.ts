@@ -62,11 +62,6 @@ export class MainController{
     console.log("saved match to DB");
   }
 
-  async temp(){
-
-   
-  }
-
   async printAllMatchesCreatinInConsole(){
     let allMatchIds = await this.apiRequester.getAllMatchIds();
     console.log("----------------------------");

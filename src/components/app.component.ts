@@ -27,6 +27,7 @@ enum MatchType{
     selector: "App",
     styleUrls: ['./../dist/styles/main.css'],
     template: `
+    <div id="app-container">
       <span>games in db: {{numMatches}} (wins: {{numWins}} / loses: {{numLoses}})</span>
       <br>
       <span>most recent game date: {{mostRecentMatchTimestamp | date:'short'}}</span>
@@ -82,6 +83,7 @@ enum MatchType{
           [matches]=currentMatches>
         </summoners>
       </div>
+    </div>
     `
 })
 export class AppComponent implements OnInit, AfterViewInit
